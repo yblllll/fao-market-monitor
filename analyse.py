@@ -1,4 +1,7 @@
 import json, math, numpy as np, datetime as dt
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from names import by_a3
 from collections import defaultdict
 
 def mkey(s): return s[:7]                      # 'YYYY-MM'
@@ -77,6 +80,22 @@ for i,m in enumerate(I['meta']):
     intl.append(rec)
 print("international series kept:",len(intl))
 
+# ---------- data quality: CPI rebasing breaks the real-price comparison ----------
+def cpi_break(dps, months=13):
+    """A jump of more than 15% in one month in the implied deflator (nominal/real)
+    is a rebasing of the national CPI, not inflation. Where that lands inside the
+    comparison window the real change is an artefact, so flag it rather than drop it."""
+    pts = sorted([x for x in dps if x.get('periodicity')=='monthly'
+                  and x.get('price_value') and x.get('price_value_real')], key=lambda x: x['date'])
+    if len(pts) < 2: return 0
+    tail = pts[-(months+1):]
+    prev = None
+    for x in tail:
+        d = x['price_value']/x['price_value_real']
+        if prev and prev > 0 and abs(math.log(d/prev)) > 0.15: return 1
+        prev = d
+    return 0
+
 # ================= DOMESTIC =================
 D=json.load(open('data/domestic_prices.json'))
 dom=[]
@@ -88,16 +107,18 @@ for m in D['meta']:
     an=ipa(real,s)
     li,lv=last_valid(real)
     ni,nv=last_valid(nom) if nom else (None,None)
-    rec={'iso':m.get('iso3'),'c':m['country_name'].title(),'st':m['staple'],'n':m['commodity_name'],
+    rec={'iso':m.get('iso3'),'c':by_a3(m.get('iso3'), m['country_name'].title()),'st':m['staple'],'n':m['commodity_name'],
          'cur':m.get('currency'),'u':m.get('measure_unit_label'),'pt':m.get('price_type'),
          's':s,'e':e,'v':real,'last':nv,'d':e,
          'yoyR':pct(lv, real[li-12] if li and li>=12 else None),
          'yoyN':pct(nv, nom[ni-12] if nom and ni and ni>=12 else None),
          'ipa':an[li] if li is not None else None}
     rec['flag']=flag(rec['ipa'])
+    rec['dq']=cpi_break(dps)
     dom.append(rec)
 print("domestic series kept:",len(dom),"| countries:",len({d['c'] for d in dom}))
 print("flags:", {f:sum(1 for d in dom if d['flag']==f) for f in ('alert','warning','normal','na')})
+print("CPI rebasing inside the 12m window:", sorted({d['c'] for d in dom if d['dq']}))
 
 # ============ PASS-THROUGH: energy -> fertiliser -> grain ============
 def find(sub, origin=None):

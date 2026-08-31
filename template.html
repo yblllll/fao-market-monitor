@@ -8,7 +8,7 @@
   --paper:#F6F7F2; --surface:#FCFCFA; --surface-2:#F1F2EC;
   --ink:#15181A; --ink-2:#4E534C; --muted:#797F76;
   --hairline:#E1E3DA; --rule:#CDD0C4; --accent:#0E6E64; --accent-soft:#DCEBE8; --on-accent:#FFFFFF;
-  --mapsea:#EDEFE9; --mapnull:#DCDFD6; --mapline:#FCFCFA; --divmid:#F0EFEC;
+  --mapsea:#EDEFE9; --mapnull:#DCDFD6; --mapline:#FCFCFA; --divmid:#F0EFEC; --sellc:#1c5cab; --buyc:#c0392f;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
   --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
   --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
@@ -21,7 +21,7 @@
     --paper:#0D0F0E; --surface:#181B19; --surface-2:#212523;
     --ink:#F1F3EE; --ink-2:#BFC4BB; --muted:#8B918700; --muted:#8B9187;
     --hairline:#2A2E2B; --rule:#3A3F3B; --accent:#4FBFAF; --accent-soft:#12312D; --on-accent:#0B0D0C;
-    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835;
+    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835; --sellc:#3987e5; --buyc:#e05a4f;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
     --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
     --good-text:#0ca30c;
@@ -33,7 +33,7 @@
   --paper:#0D0F0E; --surface:#181B19; --surface-2:#212523;
   --ink:#F1F3EE; --ink-2:#BFC4BB; --muted:#8B9187;
   --hairline:#2A2E2B; --rule:#3A3F3B; --accent:#4FBFAF; --accent-soft:#12312D; --on-accent:#0B0D0C;
-    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835;
+    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835; --sellc:#3987e5; --buyc:#e05a4f;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
   --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
   --good-text:#0ca30c;
@@ -119,6 +119,7 @@ tbody tr:last-child td{border-bottom:0}
 .corigin{color:var(--muted); font-size:12.5px}
 .pos{color:var(--critical)} .neg{color:var(--good-text)}
 .unit{color:var(--muted); font-size:11.5px}
+.dqmark{display:inline-block; width:14px; height:14px; line-height:13px; text-align:center; border:1px dashed var(--critical); color:var(--critical); border-radius:50%; font-size:10px; font-weight:700; cursor:help; vertical-align:1px}
 
 /* status pills &mdash; icon + label, never colour alone */
 .pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; white-space:nowrap;
@@ -196,6 +197,14 @@ svg{display:block; max-width:100%; overflow:visible}
 .rank li{counter-increment:r}
 .rank li span::before{content:counter(r) ". "; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px}
 
+.rankgrid{display:grid; grid-template-columns:1fr; gap:0}
+@media(min-width:860px){.rankgrid{grid-template-columns:1fr 1fr}}
+.rankcol{min-width:0; border-top:1px solid var(--hairline)}
+@media(min-width:860px){.rankcol+.rankcol{border-left:1px solid var(--hairline)}}
+.rankcap{display:flex; align-items:center; gap:8px; padding:12px 16px 0; font-size:11px;
+         letter-spacing:.1em; text-transform:uppercase; font-weight:600; color:var(--muted)}
+.rankcap i{width:14px; height:10px; border-radius:2px; display:block}
+.rankhead{font-size:13.5px; font-weight:600; align-self:center; color:var(--ink)}
 /* ---------- regression ---------- */
 .regwrap{display:grid; grid-template-columns:1fr; gap:0}
 .regwrap > div{min-width:0}
@@ -301,6 +310,7 @@ svg{display:block; max-width:100%; overflow:visible}
   <div class="panel">
     <div class="controls" id="dom-controls"></div>
     <div class="chartbox"><div id="dom-chart"></div><div class="tip" id="dom-tip"></div></div>
+    <div class="legend" id="dom-legend"></div>
     <div class="tscroll"><table id="dom-table">
       <thead><tr>
         <th><button data-k="c">Country</button></th>
@@ -334,6 +344,17 @@ svg{display:block; max-width:100%; overflow:visible}
       <aside class="mapside" id="map-side"></aside>
     </div>
     <p class="sig" id="map-note"></p>
+  </div>
+
+  <div class="panel" style="margin-top:18px">
+    <div class="controls"><span class="rankhead" id="rank-title"></span>
+      <div class="spacer"></div><span class="sig" style="align-self:center">tonnes shipped, FAO detailed trade matrix</span></div>
+    <div class="rankgrid">
+      <div class="rankcol"><div class="rankcap"><i style="background:var(--sellc)"></i>Sells &mdash; top 50 exporters</div>
+        <div class="chartbox" style="padding-top:6px"><div id="rank-sell"></div><div class="tip" id="rank-tip-s"></div></div></div>
+      <div class="rankcol"><div class="rankcap"><i style="background:var(--buyc)"></i>Buys &mdash; top 50 importers</div>
+        <div class="chartbox" style="padding-top:6px"><div id="rank-buy"></div><div class="tip" id="rank-tip-b"></div></div></div>
+    </div>
   </div>
 </section>
 
@@ -371,6 +392,7 @@ svg{display:block; max-width:100%; overflow:visible}
       <p><b>One departure, stated plainly.</b> FAO's metadata specifies a <em>weighted</em> mean and standard deviation across years but does not publish the weighting scheme. This rebuild uses equal weights and requires at least five historical observations of the same calendar month. Scores here are therefore indicative and will not match FAO's published values exactly. Domestic series are screened on CPI-deflated prices, international series on nominal US dollars.</p>
     </div>
     <div>
+      <p><b>A data-quality flag.</b> Where a national CPI is rebased, the implied deflator jumps and the real price change becomes an artefact rather than a measurement. Any series whose deflator moves more than 15&nbsp;percent in a single month inside the comparison window is marked with a dashed outline and an exclamation mark. Four countries are affected in the current window: Djibouti, Iraq, Nigeria and Tajikistan. Tajikistan is the clearest case, where the deflator jumps 242&nbsp;percent in January&nbsp;2025 and the real wheat-flour change reads +30&nbsp;percent against a nominal change of &minus;4&nbsp;percent.</p>
       <p><b>Pass-through regression.</b> <code>&Delta;ln(grain) = &alpha; + &Sigma;&beta;&#x2C7C;&Delta;ln(Brent)&#x209C;&#x208B;&#x2C7C; + &Sigma;&gamma;&#x2C7C;&Delta;ln(urea)&#x209C;&#x208B;&#x2C7C; + &epsilon;</code> for j = 0&hellip;6, estimated by OLS with Newey&ndash;West HAC covariance at six lags. The cumulative elasticity is the sum of a block's coefficients and its standard error comes from the full HAC covariance matrix, so the covariance between lag coefficients is carried rather than dropped.</p>
       <p><b>Data.</b> All series retrieved from the FAO GIEWS FPMA Tool v4 public API. Underlying sources include the International Grains Council, USDA, Oil World, the FAO rice price update, APK-Inform, the International Sugar Organization, Dairy Market News and the World Bank Pink Sheet; domestic series come from national statistical offices and market information systems. Series with fewer than 36 monthly observations are dropped.</p>
       <p><b>Citation.</b> FAO. 2026. <em>Global Information and Early Warning System on Food and Agriculture (GIEWS): Food Price Monitoring and Analysis Tool.</em> Accessed on 31&nbsp;August&nbsp;2026. https://fpma.fao.org/giews/fpmat4/ Licence: CC&nbsp;BY&nbsp;4.0. FAO statistical databases are released under the Creative Commons Attribution 4.0 International licence; this rebuild adapts that data and is redistributed on the same terms. FAO has not reviewed or endorsed it.</p><p style="color:var(--muted)"><b>Built by</b> Yibin Li &middot; <span class="mono" id="pv-counts"></span></p>
@@ -391,8 +413,8 @@ const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','
 const mLabel = k => k ? MON[+k.slice(5,7)-1]+' '+k.slice(0,4) : '';
 const addM = (k,i)=>{let y=+k.slice(0,4), m=+k.slice(5,7)-1+i; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+'-'+String(m+1).padStart(2,'0');};
 const diffM = (a,b)=>(+b.slice(0,4)-+a.slice(0,4))*12 + (+b.slice(5,7)-+a.slice(5,7));
-const nf = (v,d=0)=> v==null? '&mdash;' : v.toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
-const pf = v => v==null? '<span class="unit">&mdash;</span>' : `<span class="${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v.toFixed(1)}%</span>`;
+const nf = (v,d=0)=> v==null? '\u2014' : v.toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pf = v => v==null? '<span class="unit">\u2014</span>' : `<span class="${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v.toFixed(1)}%</span>`;
 const FLAGS = {alert:['p-alert','Abnormally high'], warning:['p-warning','Moderately high'], normal:['p-normal','Normal'], na:['p-na','No score']};
 const pill = f => {const [c,l]=FLAGS[f]||FLAGS.na; return `<span class="pill ${c}"><i></i>${l}</span>`;};
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -467,7 +489,7 @@ const drawIntl = sortable('#intl-table',
     <td class="corigin">${esc(r.o)}</td>
     <td class="r num">${nf(r.last, r.last<10?2:0)}<br><span class="unit">USD/${esc(r.u)}</span></td>
     <td class="r num">${pf(r.mom)}</td><td class="r num">${pf(r.yoy)}</td><td class="r num">${pf(r.y3)}</td>
-    <td class="r num">${r.ipa==null?'<span class="unit">&mdash;</span>':r.ipa.toFixed(2)}</td>
+    <td class="r num">${r.ipa==null?'<span class="unit">\u2014</span>':r.ipa.toFixed(2)}</td>
     <td>${pill(r.flag)}</td><td>${spark(r.v.slice(Math.max(0,diffM(r.s,'2016-01'))))}</td></tr>`);
 drawIntl();
 
@@ -544,7 +566,7 @@ function drawCmp(){
   const from='2016-01';
   const series = rows.map((r,i)=>{
     const off=Math.max(0,diffM(r.s,from));
-    return {name:`${r.o} &mdash; ${r.n.replace(/^[A-Za-z ]+\(/,'').replace(/\)$/,'')}`.slice(0,58),
+    return {name:`${r.o} \u2014 ${r.n.replace(/^[A-Za-z ]+\(/,'').replace(/\)$/,'')}`.slice(0,58),
             short:r.o.split(/[ (,]/)[0], v:r.v.slice(off), s:off?from:r.s, e:r.e, c:S[i%8]};
   });
   const narrow = (host=>host.clientWidth<520)($('#cmp-chart'));
@@ -565,25 +587,31 @@ function drawDomChart(){
   const rows = P.dom.filter(d=>d.st===domSt && d.yoyR!=null).sort((a,b)=>b.yoyR-a.yoyR);
   const host=$('#dom-chart'), tip=$('#dom-tip');
   if(!rows.length){host.innerHTML='<div class="empty">No series.</div>';return;}
-  const W=host.clientWidth||760, nar=W<520, BH=nar?17:19, M={t:8,r:nar?42:56,b:26,l:nar?92:126}, ih=rows.length*BH, H=ih+M.t+M.b;
-  const iw=Math.max(120,W-M.l-M.r);
+  const W=host.clientWidth||760, nar=W<520, BH=nar?17:19, PAD={t:8,r:nar?42:56,b:26,l:nar?92:126}, ih=rows.length*BH, H=ih+PAD.t+PAD.b;
+  const iw=Math.max(120,W-PAD.l-PAD.r);
   const lo=Math.min(0,...rows.map(r=>r.yoyR)), hi=Math.max(0,...rows.map(r=>r.yoyR));
-  const sx=v=>M.l+(v-lo)/((hi-lo)||1)*iw;
-  const col=f=> f==='alert'?'var(--critical)': f==='warning'?'var(--serious)':'var(--accent)';
+  const sx=v=>PAD.l+(v-lo)/((hi-lo)||1)*iw;
+  const col=f=> f==='alert'?'var(--critical)': f==='warning'?'var(--serious)': f==='normal'?'var(--good)':'var(--muted)';
+  $('#dom-legend').innerHTML =
+    `<span style="color:var(--ink-2)">Bar length is the 12-month change in the CPI-deflated price. Colour is the SDG&nbsp;2.c.1 status:</span>`+
+    [['var(--good)','Normal, below 0.5'],['var(--serious)','Moderately high, 0.5 to 1.0'],
+     ['var(--critical)','Abnormally high, 1.0 and above'],['var(--muted)','No score yet']]
+      .map(([c,l])=>`<span><i style="background:${c}"></i>${l}</span>`).join('')+
+    `<span title="CPI rebased"><i style="background:transparent;border:1px dashed var(--ink)"></i>CPI rebased, real change unreliable</span>`;
   let g='';
   const nTicks=5;
   for(let i=0;i<=nTicks;i++){const v=lo+(hi-lo)*i/nTicks, x=sx(v);
-    g+=`<line class="gridline" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${M.t}" y2="${M.t+ih}"/>
+    g+=`<line class="gridline" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PAD.t}" y2="${PAD.t+ih}"/>
         <text class="tick" x="${x.toFixed(1)}" y="${H-8}" text-anchor="middle">${v.toFixed(0)}%</text>`;}
   const zx=sx(0);
   rows.forEach((r,i)=>{
-    const y=M.t+i*BH+3, h=BH-6, x=Math.min(zx,sx(r.yoyR)), w=Math.max(2,Math.abs(sx(r.yoyR)-zx));
+    const y=PAD.t+i*BH+3, h=BH-6, x=Math.min(zx,sx(r.yoyR)), w=Math.max(2,Math.abs(sx(r.yoyR)-zx));
     const rad=Math.min(4,w);
-    g+=`<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="${rad}" fill="${col(r.flag)}" data-i="${i}"/>
-        <text class="tick" x="${M.l-9}" y="${y+h-2.5}" text-anchor="end" style="font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-2)">${esc(r.c.length>17?r.c.slice(0,16)+'&hellip;':r.c)}</text>
+    g+=`<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="${rad}" fill="${col(r.flag)}" ${r.dq?'stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 2" opacity=".55"':''} data-i="${i}"/>
+        <text class="tick" x="${PAD.l-9}" y="${y+h-2.5}" text-anchor="end" style="font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-2)">${esc(r.c.length>17?r.c.slice(0,16)+'\u2026':r.c)}</text>
         <text class="tick" x="${(Math.max(zx,sx(r.yoyR))+6).toFixed(1)}" y="${y+h-2.5}" style="font-size:10.5px">${r.yoyR>0?'+':''}${r.yoyR.toFixed(0)}%</text>`;
   });
-  g+=`<line class="axisline" x1="${zx.toFixed(1)}" x2="${zx.toFixed(1)}" y1="${M.t}" y2="${M.t+ih}"/>`;
+  g+=`<line class="axisline" x1="${zx.toFixed(1)}" x2="${zx.toFixed(1)}" y1="${PAD.t}" y2="${PAD.t+ih}"/>`;
   host.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Real 12-month change in ${esc(domSt)} prices by country">${g}</svg>`;
   const svg=host.querySelector('svg');
   svg.querySelectorAll('rect[data-i]').forEach(rect=>{
@@ -592,9 +620,10 @@ function drawDomChart(){
       tip.innerHTML=`<div class="th">${esc(r.c)}</div>
         <div class="row"><span class="tipname">${esc(r.n)}</span></div>
         <div class="row"><span class="tipname">Real 12m</span><b>${r.yoyR>0?'+':''}${r.yoyR.toFixed(1)}%</b></div>
-        <div class="row"><span class="tipname">Nominal 12m</span><b>${r.yoyN==null?'&mdash;':(r.yoyN>0?'+':'')+r.yoyN.toFixed(1)+'%'}</b></div>
-        <div class="row"><span class="tipname">IPA</span><b>${r.ipa==null?'&mdash;':r.ipa.toFixed(2)}</b></div>
-        <div style="margin-top:6px">${pill(r.flag)}</div>`;
+        <div class="row"><span class="tipname">Nominal 12m</span><b>${r.yoyN==null?'\u2014':(r.yoyN>0?'+':'')+r.yoyN.toFixed(1)+'%'}</b></div>
+        <div class="row"><span class="tipname">IPA</span><b>${r.ipa==null?'\u2014':r.ipa.toFixed(2)}</b></div>
+        <div style="margin-top:6px">${pill(r.flag)}</div>
+        ${r.dq?'<div class="row" style="margin-top:7px;color:var(--critical);font-size:11.5px">National CPI was rebased inside this window, so the real change and the IPA are unreliable here.</div>':''}`;
       tip.style.opacity=1;
       const hb=host.getBoundingClientRect(), rb=rect.getBoundingClientRect();
       let left=rb.right-hb.left+12; if(left+190>hb.width) left=rb.left-hb.left-tip.offsetWidth-12;
@@ -605,11 +634,11 @@ function drawDomChart(){
   });
 }
 const drawDomTable = sortable('#dom-table', ()=>P.dom.filter(d=>d.st===domSt), r=>`<tr>
-  <td class="cname">${esc(r.c)}</td>
+  <td class="cname">${esc(r.c)}${r.dq?' <span class="dqmark" title="National CPI rebased inside the 12-month window: the real change and the IPA are unreliable for this series">!</span>':''}</td>
   <td class="corigin">${esc(r.n)}</td>
   <td class="r num">${nf(r.last, r.last<10?2:0)}<br><span class="unit">${esc(r.cur||'')}/${esc(r.u||'')}</span></td>
   <td class="r num">${pf(r.yoyN)}</td><td class="r num">${pf(r.yoyR)}</td>
-  <td class="r num">${r.ipa==null?'<span class="unit">&mdash;</span>':r.ipa.toFixed(2)}</td>
+  <td class="r num">${r.ipa==null?'<span class="unit">\u2014</span>':r.ipa.toFixed(2)}</td>
   <td>${pill(r.flag)}</td></tr>`);
 $('#dom-controls').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
   domSt=b.dataset.s; $('#dom-controls').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
@@ -863,7 +892,7 @@ function wireMapEvents(host){
     p.addEventListener('mousemove',e=>{
       if(dragState.down) return;
       const id=p.dataset.id, tr=(M.trade[id]||{})[mapGroup], pr=(M.price[id]||{})[mapGroup];
-      tip.innerHTML=`<div class="th">${esc(M.names[id]||'&mdash;')}</div>`+
+      tip.innerHTML=`<div class="th">${esc(M.names[id]||'\u2014')}</div>`+
         (tr?`<div class="row"><span class="tipname">Exports</span><b>${(tr.x/1e6).toFixed(2)} Mt</b></div>
              <div class="row"><span class="tipname">Imports</span><b>${(tr.m/1e6).toFixed(2)} Mt</b></div>`
            :`<div class="row"><span class="tipname">No ${esc(mapGroup.toLowerCase())} trade reported</span></div>`)+
@@ -916,8 +945,8 @@ function drawLegend(sc){
     el.className='maplegend stacked';
     const cap=sc.max.toFixed(1);
     el.innerHTML=
-      `<div class="lgrow"><span class="lgk">Buys &mdash; net importer</span>${DIV_NEG.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`+
-      `<div class="lgrow"><span class="lgk">Sells &mdash; net exporter</span>${DIV_POS.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`;
+      `<div class="lgrow"><span class="lgk">Buys \u2014 net importer</span>${DIV_NEG.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`+
+      `<div class="lgrow"><span class="lgk">Sells \u2014 net exporter</span>${DIV_POS.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`;
     return;
   }
   el.className='maplegend';
@@ -947,8 +976,8 @@ function drawSide(){
       :`<p class="sidep">No ${esc(mapGroup.toLowerCase())} trade reported for ${M.year}.</p>`}
     ${pr?`<div class="prbox"><div class="prtop"><span>Domestic price, ${esc(pr.n||mapGroup)}</span>${pill(pr.flag)}</div>
         <div class="kv"><div><span>Latest</span><b>${nf(pr.last, pr.last<10?2:0)} ${esc(pr.cur||'')}/${esc(pr.u||'')}</b></div>
-        <div><span>12m real</span><b>${pr.yoyR==null?'&mdash;':(pr.yoyR>0?'+':'')+pr.yoyR.toFixed(1)+'%'}</b></div>
-        <div><span>IPA</span><b>${pr.ipa==null?'&mdash;':pr.ipa.toFixed(2)}</b></div></div></div>`:''}
+        <div><span>12m real</span><b>${pr.yoyR==null?'\u2014':(pr.yoyR>0?'+':'')+pr.yoyR.toFixed(1)+'%'}</b></div>
+        <div><span>IPA</span><b>${pr.ipa==null?'\u2014':pr.ipa.toFixed(2)}</b></div></div></div>`:''}
     ${out.length?`<div class="flowh"><i style="background:var(--s1)"></i>Ships to</div>
       <ul class="flist">${out.map(([p,v])=>`<li><span>${nm(p)}</span><b>${(v/1e6).toFixed(2)} Mt</b></li>`).join('')}</ul>`:''}
     ${inn.length?`<div class="flowh"><i style="background:var(--s2)"></i>Buys from</div>
@@ -962,7 +991,7 @@ $('#map-note').innerHTML = `FAOSTAT detailed trade matrix, ${M.year}, export qua
 
 $('#map-c1').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
   mapGroup=b.dataset.g; $('#map-c1').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
-  drawMap(); drawSide();});
+  drawMap(); drawSide(); drawRanks();});
 $('#map-c2').addEventListener('click',e=>{
   const b=e.target.closest('.chip'); if(!b)return;
   if(b.id==='map-clear'){ pinned=null; panX=0; panY=0; zoom=1; drawMap(); drawSide(); return; }
@@ -970,8 +999,61 @@ $('#map-c2').addEventListener('click',e=>{
   $('#map-c2').querySelectorAll('.chip[data-m]').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
   drawMap(); drawSide();});
 
+
+/* ---- top-50 sellers / buyers for the selected commodity ---- */
+function rankBars(hostSel, tipSel, rows, colour, unitLabel){
+  const host=$(hostSel), tip=$(tipSel);
+  if(!rows.length){ host.innerHTML='<div class="empty">Nothing reported.</div>'; return; }
+  const W=Math.max(280,host.clientWidth||420), BH=15, PAD={t:4,r:52,b:22,l:104};
+  const ih=rows.length*BH, H=ih+PAD.t+PAD.b, iw=Math.max(60,W-PAD.l-PAD.r);
+  const mx=Math.max(...rows.map(r=>r[1]));
+  const sx=v=>v/mx*iw;
+  let g='';
+  for(let i=0;i<=4;i++){ const v=mx*i/4, x=PAD.l+sx(v);
+    g+=`<line class="gridline" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PAD.t}" y2="${PAD.t+ih}"/>
+        <text class="tick" x="${x.toFixed(1)}" y="${H-7}" text-anchor="middle">${v>=10?v.toFixed(0):v.toFixed(1)}</text>`; }
+  rows.forEach(([id,v],i)=>{
+    const y=PAD.t+i*BH+2, h=BH-4, w=Math.max(1.5,sx(v));
+    g+=`<rect x="${PAD.l}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="${Math.min(3,w).toFixed(1)}" fill="${colour}" data-i="${i}" class="rbar"/>
+        <text class="tick" x="${PAD.l-8}" y="${y+h-2}" text-anchor="end" style="font-family:Archivo,sans-serif;font-size:10.5px;fill:var(--ink-2)">${esc((M.names[id]||id).length>15?(M.names[id]||id).slice(0,14)+'\u2026':(M.names[id]||id))}</text>
+        <text class="tick" x="${(PAD.l+w+6).toFixed(1)}" y="${y+h-2}" style="font-size:10px">${v>=10?v.toFixed(0):v.toFixed(2)}</text>`;
+  });
+  g+=`<line class="axisline" x1="${PAD.l}" x2="${PAD.l}" y1="${PAD.t}" y2="${PAD.t+ih}"/>
+      <text class="tick" x="${PAD.l+iw/2}" y="${H-7}" text-anchor="middle" style="opacity:0">${esc(unitLabel)}</text>`;
+  host.innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="height:auto" role="img" aria-label="${esc(unitLabel)}">${g}</svg>`;
+  host.querySelectorAll('.rbar').forEach(b=>{
+    b.style.cursor='pointer';
+    b.addEventListener('mouseenter',e=>{
+      const [id,v]=rows[+b.dataset.i], t2=(M.trade[id]||{})[mapGroup]||{};
+      tip.innerHTML=`<div class="th">${esc(M.names[id]||id)}</div>
+        <div class="row"><span class="tipname">Exports</span><b>${(t2.x/1e6||0).toFixed(2)} Mt</b></div>
+        <div class="row"><span class="tipname">Imports</span><b>${(t2.m/1e6||0).toFixed(2)} Mt</b></div>
+        <div class="row" style="margin-top:5px;color:var(--muted);font-size:11.5px">Click to pin on the map</div>`;
+      tip.style.opacity=1;
+      const hb=host.getBoundingClientRect(), rb=b.getBoundingClientRect();
+      tip.style.left=Math.max(4,Math.min(hb.width-tip.offsetWidth-4, rb.right-hb.left+10))+'px';
+      tip.style.top=Math.max(4,Math.min(hb.height-tip.offsetHeight-4, rb.top-hb.top-tip.offsetHeight/2))+'px';
+    });
+    b.addEventListener('mouseleave',()=>tip.style.opacity=0);
+    b.addEventListener('click',()=>{ pinned=rows[+b.dataset.i][0]; drawMap(); drawSide();
+      $('#worldmap').scrollIntoView({block:'center',behavior:'smooth'}); });
+  });
+}
+function drawRanks(){
+  const sell=[], buy=[];
+  for(const c in M.trade){
+    const t2=M.trade[c][mapGroup]; if(!t2) continue;
+    if(t2.x>0) sell.push([c,t2.x/1e6]);
+    if(t2.m>0) buy.push([c,t2.m/1e6]);
+  }
+  sell.sort((a,b)=>b[1]-a[1]); buy.sort((a,b)=>b[1]-a[1]);
+  $('#rank-title').textContent=`${mapGroup}, ${M.year}`;
+  rankBars('#rank-sell','#rank-tip-s',sell.slice(0,50),'var(--sellc)',`Top ${Math.min(50,sell.length)} ${mapGroup} exporters, Mt`);
+  rankBars('#rank-buy','#rank-tip-b',buy.slice(0,50),'var(--buyc)',`Top ${Math.min(50,buy.length)} ${mapGroup} importers, Mt`);
+}
+
 /* ============ boot ============ */
-function renderAll(){drawCmp(); drawDomChart(); drawReg(); drawMap(); drawSide();}
+function renderAll(){drawCmp(); drawDomChart(); drawReg(); drawMap(); drawSide(); drawRanks();}
 drawDomTable(); renderAll();
 let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(renderAll,180);});
 </script>

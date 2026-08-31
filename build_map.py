@@ -1,5 +1,6 @@
 """Build the trade-map payload: world topology + bilateral flows + FPMA price status."""
-import json, collections, math, os
+import json, collections, math, os, sys
+sys.path.insert(0, DB if False else os.path.dirname(os.path.abspath(__file__)))
 
 SC = '/private/tmp/claude-501/-Users-ybl-Desktop-Resume/41eda02a-5815-40f0-a57b-edac92b1da62/scratchpad'
 DB = '/Users/ybl/Desktop/Resume/FAO YPP EST Economist/dashboard'
@@ -116,7 +117,8 @@ for d in P['dom']:
                            'yoyN': d['yoyN'], 'n': d['n'], 'cur': d['cur'], 'u': d['u'], 'last': d['last']}
 print(f'price countries matched: {len(price)}; unmatched: {sorted(unmatched)[:8]}')
 
-names = {c: NUM2NAME.get(c, c) for c in set(list(ctry) + list(price) + list(CENT))}
+from names import by_num
+names = {c: by_num(c, NUM2NAME.get(c, c)) for c in set(list(ctry) + list(price) + list(CENT))}
 out = {
     'year': YEAR, 'groups': GROUPS, 'topo': W, 'cent': CENT,
     'names': names, 'reg': {c: NUM2REG.get(c, '') for c in names},

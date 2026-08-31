@@ -77,3 +77,33 @@ Saudi Arabia (2.1) as its largest destinations.
   Bank-sourced subset could be checked, because only that source is openly downloadable.
 * The pass-through regression is a reduced-form association on 83 monthly observations in
   the 2019+ window. It is not identified as causal and is not presented as such.
+
+## Country naming
+
+All country labels resolve through one table (`names.py`): FPMA's ISO alpha-3 and FAOSTAT's M49
+are both looked up against ISO 3166, then a common-usage override shortens the inverted and
+ceremonial forms. This replaced FPMA's raw strings, which were long and inconsistently cased
+("Libyan Arab Jamahiriya", "Lao People'S Democratic Republic", "Republic Of Moldova"). The map,
+the price tables and the trade rankings now draw from the same table, so they cannot disagree.
+
+## A second data-quality problem, found and flagged
+
+Recomputing the 12-month changes directly from the raw FPMA datapoints reproduces the dashboard
+exactly for every series checked. But one of those checks surfaced a problem in the source data.
+
+Tajikistan's wheat flour reads **−4.0% nominal and +30.2% real** over the year to June 2026. The
+implied deflator (nominal ÷ real) therefore fell 26%, which is not deflation — it is a rebasing of
+the national CPI. Scanning every series for single-month deflator moves above 15% finds breaks in
+11 countries, of which four fall inside the current comparison window: **Djibouti, Iraq, Nigeria
+and Tajikistan**. Tajikistan's deflator jumps 242% in January 2025.
+
+These series are marked rather than dropped: a dashed outline on the bar, an exclamation mark in
+the table, an explanation in the tooltip, and an entry in the chart legend. Their real change and
+their SDG 2.c.1 score should not be read as measurements.
+
+## Trade rankings sanity check
+
+Top rice exporters 2024 as computed: India, Thailand, Viet Nam, Pakistan, Cambodia, United States.
+Top rice importers: Viet Nam, Philippines, Indonesia, Benin, Côte d'Ivoire, Iraq. Top wheat
+importers: Egypt, Indonesia, China, Spain, Italy, Türkiye, Brazil, Algeria. All match the known
+structure of those markets.
