@@ -205,6 +205,24 @@ svg{display:block; max-width:100%; overflow:visible}
          letter-spacing:.1em; text-transform:uppercase; font-weight:600; color:var(--muted)}
 .rankcap i{width:14px; height:10px; border-radius:2px; display:block}
 .rankhead{font-size:13.5px; font-weight:600; align-self:center; color:var(--ink)}
+.partbar{margin-top:62px; padding-top:22px; border-top:2px solid var(--ink)}
+.partnum{font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:700; color:var(--accent)}
+.parth{font-size:30px; margin:6px 0 0; letter-spacing:-.015em}
+.partp{color:var(--ink-2); font-size:14.5px; max-width:72ch; margin:8px 0 0}
+.cplbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:600; color:var(--muted); align-self:center}
+.cpstats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0; border-bottom:1px solid var(--hairline)}
+.cpstat{padding:13px 16px; border-right:1px solid var(--hairline)}
+.cpstat:last-child{border-right:0}
+.cpstat .k{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.cpstat .v{font-family:"IBM Plex Mono",monospace; font-size:20px; margin-top:5px}
+.cpstat .s{font-size:11.5px; color:var(--ink-2)}
+.cpgrid{display:grid; grid-template-columns:1fr}
+@media(min-width:940px){.cpgrid{grid-template-columns:1fr 1fr}}
+.cpcell{min-width:0}
+@media(min-width:940px){.cpgrid .cpcell+.cpcell{border-left:1px solid var(--hairline)}}
+@media(max-width:939px){.cpgrid .cpcell+.cpcell{border-top:1px solid var(--hairline)}}
+.cpcap{padding:14px 16px 0; font-size:11px; letter-spacing:.09em; text-transform:uppercase; font-weight:600; color:var(--muted)}
+.ptab{padding:14px 16px 20px; border-top:1px solid var(--hairline)}
 /* ---------- regression ---------- */
 .regwrap{display:grid; grid-template-columns:1fr; gap:0}
 .regwrap > div{min-width:0}
@@ -215,6 +233,25 @@ svg{display:block; max-width:100%; overflow:visible}
 .tstat{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
 .strong{color:var(--ink); font-weight:600}
 
+.sources{margin-top:52px; border-top:2px solid var(--ink); padding-top:26px}
+.srchead{margin-bottom:20px}
+.srch3{font-size:22px; margin:8px 0 0; letter-spacing:-.01em}
+.srch4{font-size:14.5px; margin:0 0 6px; font-family:"Source Serif 4",Georgia,serif}
+.srcp{color:var(--ink-2); font-size:13.5px; max-width:76ch; margin:8px 0 0}
+.srctab{font-size:13px; margin-top:6px}
+.srctab thead th{position:static; background:transparent; padding:0 12px 8px 0; border-bottom:1px solid var(--rule)}
+.srctab thead th.r{text-align:right; padding-right:0}
+.srctab td{padding:9px 12px 9px 0; border-bottom:1px solid var(--hairline); vertical-align:top}
+.srctab td:last-child{padding-right:0}
+.srctab tr:hover{background:transparent}
+.srcgrid{display:grid; grid-template-columns:1fr; gap:26px; margin-top:30px}
+@media(min-width:820px){.srcgrid{grid-template-columns:1fr 1fr}}
+.provlist{list-style:none; margin:12px 0 0; padding:0; font-size:12.5px; column-count:1}
+.provlist li{display:flex; justify-content:space-between; gap:12px; padding:3px 0; color:var(--ink-2); border-bottom:1px solid var(--hairline)}
+.provlist li b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--muted); font-size:11.5px}
+.srcfoot{margin-top:30px; padding-top:18px; border-top:1px solid var(--rule)}
+.srcfoot p{color:var(--ink-2); font-size:13px; max-width:88ch; margin:0 0 10px}
+.sources a{color:var(--accent); text-decoration:underline; text-underline-offset:2px}
 /* ---------- notes ---------- */
 .note{margin-top:52px; border-top:2px solid var(--rule); padding-top:26px}
 .note h3{font-size:17px; margin-bottom:8px}
@@ -259,6 +296,9 @@ svg{display:block; max-width:100%; overflow:visible}
 </header>
 
 <div class="tiles" id="tiles"></div>
+
+<div class="partbar"><span class="partnum">Part I</span><h2 class="parth">The global picture</h2>
+  <p class="partp">Everything FAO tracks, all countries at once.</p></div>
 
 <section>
   <div class="shead"><div>
@@ -384,6 +424,38 @@ svg{display:block; max-width:100%; overflow:visible}
   <p class="sdesc" id="reg-read" style="margin-top:16px"></p>
 </section>
 
+<div class="partbar" id="part2"><span class="partnum">Part II</span><h2 class="parth">One country at a time</h2>
+  <p class="partp">Pick a country and the same data narrows to it: what its households actually pay, when those prices were abnormal, and where it sits in world trade. Clicking a country on the map above also lands here.</p></div>
+
+<section style="margin-top:22px">
+  <div class="panel">
+    <div class="controls" id="cp-controls">
+      <label class="cplbl" for="cp-select">Country</label>
+      <select id="cp-select" class="srch" style="min-width:230px"></select>
+      <div class="spacer"></div><span class="sig" id="cp-meta" style="align-self:center"></span>
+    </div>
+    <div class="cpstats" id="cp-stats"></div>
+    <div class="cpgrid">
+      <div class="cpcell">
+        <div class="cpcap">What households pay &mdash; real prices, indexed to 100</div>
+        <div class="chartbox"><div id="cp-price"></div><div class="tip" id="cp-tip-p"></div></div>
+        <div class="legend" id="cp-price-lg"></div>
+      </div>
+      <div class="cpcell">
+        <div class="cpcap">When those prices were abnormal &mdash; SDG 2.c.1 over time</div>
+        <div class="chartbox"><div id="cp-ipa"></div><div class="tip" id="cp-tip-i"></div></div>
+        <div class="legend" id="cp-ipa-lg"></div>
+      </div>
+    </div>
+    <div class="cpcell" style="border-top:1px solid var(--hairline)">
+      <div class="cpcap">Where it sits in world trade &mdash; every staple, <span id="cp-year"></span></div>
+      <div class="chartbox"><div id="cp-trade"></div><div class="tip" id="cp-tip-t"></div></div>
+      <div class="legend"><span><i style="background:var(--sellc)"></i>Exports</span><span><i style="background:var(--buyc)"></i>Imports</span></div>
+    </div>
+    <div id="cp-partners"></div>
+  </div>
+</section>
+
 <div class="note">
   <h3>Method</h3>
   <div class="grid2">
@@ -394,9 +466,43 @@ svg{display:block; max-width:100%; overflow:visible}
     <div>
       <p><b>A data-quality flag.</b> Where a national CPI is rebased, the implied deflator jumps and the real price change becomes an artefact rather than a measurement. Any series whose deflator moves more than 15&nbsp;percent in a single month inside the comparison window is marked with a dashed outline and an exclamation mark. Four countries are affected in the current window: Djibouti, Iraq, Nigeria and Tajikistan. Tajikistan is the clearest case, where the deflator jumps 242&nbsp;percent in January&nbsp;2025 and the real wheat-flour change reads +30&nbsp;percent against a nominal change of &minus;4&nbsp;percent.</p>
       <p><b>Pass-through regression.</b> <code>&Delta;ln(grain) = &alpha; + &Sigma;&beta;&#x2C7C;&Delta;ln(Brent)&#x209C;&#x208B;&#x2C7C; + &Sigma;&gamma;&#x2C7C;&Delta;ln(urea)&#x209C;&#x208B;&#x2C7C; + &epsilon;</code> for j = 0&hellip;6, estimated by OLS with Newey&ndash;West HAC covariance at six lags. The cumulative elasticity is the sum of a block's coefficients and its standard error comes from the full HAC covariance matrix, so the covariance between lag coefficients is carried rather than dropped.</p>
-      <p><b>Data.</b> All series retrieved from the FAO GIEWS FPMA Tool v4 public API. Underlying sources include the International Grains Council, USDA, Oil World, the FAO rice price update, APK-Inform, the International Sugar Organization, Dairy Market News and the World Bank Pink Sheet; domestic series come from national statistical offices and market information systems. Series with fewer than 36 monthly observations are dropped.</p>
+      <p><b>Data.</b> Every series and every flow is listed by source in the block below.</p>
       <p><b>Citation.</b> FAO. 2026. <em>Global Information and Early Warning System on Food and Agriculture (GIEWS): Food Price Monitoring and Analysis Tool.</em> Accessed on 31&nbsp;August&nbsp;2026. https://fpma.fao.org/giews/fpmat4/ Licence: CC&nbsp;BY&nbsp;4.0. FAO statistical databases are released under the Creative Commons Attribution 4.0 International licence; this rebuild adapts that data and is redistributed on the same terms. FAO has not reviewed or endorsed it.</p><p style="color:var(--muted)"><b>Built by</b> Yibin Li &middot; <span class="mono" id="pv-counts"></span></p>
     </div>
+  </div>
+</div>
+
+<div class="sources" id="sources">
+  <div class="srchead">
+    <span class="eyebrow" style="color:var(--accent)">Data sources</span>
+    <h3 class="srch3">Everything on this page, and where it came from</h3>
+    <p class="srcp">Retrieved <b id="src-date"></b>. Nothing here is modelled or imputed except where the method note says so.</p>
+  </div>
+
+  <div class="tscroll" style="max-height:none">
+    <table class="srctab">
+      <thead><tr><th>Layer</th><th>Source</th><th>What exactly</th><th class="r">Records</th></tr></thead>
+      <tbody id="src-rows"></tbody>
+    </table>
+  </div>
+
+  <div class="srcgrid">
+    <div>
+      <h4 class="srch4">Who produces the international quotations</h4>
+      <p class="srcp">FAO re-disseminates these; it does not price them itself. Counts are the number of series on this page that each provider stands behind.</p>
+      <ul class="provlist" id="src-intl"></ul>
+    </div>
+    <div>
+      <h4 class="srch4">Who produces the domestic retail prices</h4>
+      <p class="srcp">National statistical offices and market information systems, <b id="src-domn"></b> of them in this panel. The twelve largest contributors:</p>
+      <ul class="provlist" id="src-dom"></ul>
+    </div>
+  </div>
+
+  <div class="srcfoot">
+    <p><b>Verification.</b> Eleven international series were checked month by month against the World Bank Pink Sheet downloaded independently, over 312 monthly observations each, and reproduce it exactly. Trade totals were checked against the known structure of world markets. Four countries carry a CPI-rebasing flag. The full record, including what was <em>not</em> verified, is in <a href="https://github.com/yblllll/fao-market-monitor/blob/main/VALIDATION.md">VALIDATION.md</a>.</p>
+    <p><b>Citation.</b> FAO. 2026. <em>Global Information and Early Warning System on Food and Agriculture (GIEWS): Food Price Monitoring and Analysis Tool.</em> Accessed on 31 August 2026. <a href="https://fpma.fao.org/giews/fpmat4/">fpma.fao.org/giews/fpmat4</a> Licence: CC BY 4.0. &mdash; FAO. 2026. <em>FAOSTAT: Detailed Trade Matrix.</em> Accessed on 31 August 2026. <a href="https://www.fao.org/faostat/en/#data/TM">fao.org/faostat</a> Licence: CC BY 4.0.</p>
+    <p><b>Terms.</b> FAO statistical databases are released under the Creative Commons Attribution 4.0 International licence. This rebuild adapts that data and is redistributed on the same terms. It is not an FAO publication and FAO has not reviewed or endorsed it. Country names and boundaries follow ISO 3166 and Natural Earth, and imply no position on the legal status of any territory. Built by Yibin Li; source at <a href="https://github.com/yblllll/fao-market-monitor">github.com/yblllll/fao-market-monitor</a>.</p>
   </div>
 </div>
 </div>
@@ -508,6 +614,15 @@ function lineChart(host, tipEl, legendEl, series, opts={}){
   const sx=i=>M.l+(N<2?0:i/(N-1)*iw), sy=v=>M.t+ih-(v-lo)/(hi-lo)*ih;
   const ticks=(n=5)=>{const o=[];for(let i=0;i<=n;i++)o.push(lo+(hi-lo)*i/n);return o;};
   let g='';
+  (opts.bands||[]).forEach(b=>{
+    const y1=sy(Math.min(b.hi,hi)), y2=sy(Math.max(b.lo,lo));
+    if(y2>y1) g+=`<rect x="${M.l}" y="${y1.toFixed(1)}" width="${iw}" height="${(y2-y1).toFixed(1)}" fill="${b.c}" opacity="${b.o||.1}"/>`;
+  });
+  (opts.rules||[]).forEach(r=>{
+    if(r.v<lo||r.v>hi) return;
+    g+=`<line x1="${M.l}" x2="${M.l+iw}" y1="${sy(r.v).toFixed(1)}" y2="${sy(r.v).toFixed(1)}" stroke="${r.c}" stroke-width="1" stroke-dasharray="4 3"/>`+
+       `<text class="tick" x="${M.l+iw-3}" y="${(sy(r.v)-4).toFixed(1)}" text-anchor="end" fill="${r.c}">${esc(r.l)}</text>`;
+  });
   ticks().forEach(v=>{g+=`<line class="gridline" x1="${M.l}" x2="${M.l+iw}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}"/>
     <text class="tick" x="${M.l-8}" y="${(sy(v)+3.5).toFixed(1)}" text-anchor="end">${nf(v, hi<20?2:0)}</text>`;});
   const step=Math.max(1,Math.ceil(N/7/12)*12);
@@ -908,6 +1023,7 @@ function wireMapEvents(host){
     p.addEventListener('click',()=>{
       if(dragState.moved>5) return;            // it was a drag, not a pick
       pinned = pinned===p.dataset.id?null:p.dataset.id;
+      if(pinned && CP_LIST.includes(pinned)){ cpSel=pinned; $('#cp-select').value=pinned; drawCountry(); }
       drawMap(); drawSide();
     });
   });
@@ -1052,8 +1168,161 @@ function drawRanks(){
   rankBars('#rank-buy','#rank-tip-b',buy.slice(0,50),'var(--buyc)',`Top ${Math.min(50,buy.length)} ${mapGroup} importers, Mt`);
 }
 
+
+/* ============ Part II : country profile ============ */
+const CP_STAPLE_COLOUR = {};
+[...new Set(P.dom.map(d=>d.st))].sort().forEach((s,i)=>CP_STAPLE_COLOUR[s]=S[i%8]);
+const CP_PRICE = {};                                  // M49 -> [series]
+P.dom.forEach(d=>{ if(d.num) (CP_PRICE[d.num] ||= []).push(d); });
+const CP_LIST = [...new Set([...Object.keys(CP_PRICE), ...Object.keys(M.trade)])]
+  .filter(c=>M.names[c])
+  .sort((a,b)=>M.names[a].localeCompare(M.names[b]));
+let cpSel = CP_LIST.find(c=>c==='818') || CP_LIST[0];   // Egypt opens by default
+
+$('#cp-select').innerHTML = CP_LIST.map(c=>{
+  const n=(CP_PRICE[c]||[]).length, t2=M.trade[c];
+  const tag = n ? `${n} price series` : (t2 ? 'trade only' : '');
+  return `<option value="${c}"${c===cpSel?' selected':''}>${esc(M.names[c])}${tag?' \u2014 '+tag:''}</option>`;
+}).join('');
+$('#cp-select').addEventListener('change',e=>{ cpSel=e.target.value; drawCountry(); });
+
+function cpWindow(rows, months){
+  const end = rows.reduce((a,d)=>d.e>a?d.e:a,'');
+  return [addM(end,-(months-1)), end];
+}
+function cpSlice(d, from){
+  const off = diffM(d.s, from);
+  return off>=0 ? {v:d.v.slice(off), s:from} : {v:d.v, s:d.s};
+}
+
+function drawCountry(){
+  const rows = (CP_PRICE[cpSel]||[]).slice().sort((a,b)=>a.st.localeCompare(b.st));
+  const tr = M.trade[cpSel]||{};
+  $('#cp-meta').textContent = `${M.reg[cpSel]||''}${rows.length?' \u00b7 prices from '+mLabel(rows.reduce((a,d)=>d.s<a?d.s:a,'9999-99')):''}`;
+  $('#cp-year').textContent = M.year;
+
+  /* --- stat row --- */
+  const alerts = rows.filter(d=>d.flag==='alert').length, warns = rows.filter(d=>d.flag==='warning').length;
+  const totX = Object.values(tr).reduce((a,v)=>a+v.x,0)/1e6, totM = Object.values(tr).reduce((a,v)=>a+v.m,0)/1e6;
+  const worst = rows.filter(d=>d.ipa!=null).sort((a,b)=>b.ipa-a.ipa)[0];
+  $('#cp-stats').innerHTML = [
+    ['Staples priced', rows.length||'\u2014', rows.length?rows.map(d=>d.st).join(', '):'not in the FPMA panel'],
+    ['Flagged now', alerts+warns, `${alerts} abnormally high, ${warns} moderately high`],
+    ['Staple exports', totX?totX.toFixed(2)+' Mt':'\u2014', `across ${Object.keys(tr).length} commodities, ${M.year}`],
+    ['Staple imports', totM?totM.toFixed(2)+' Mt':'\u2014', totM>totX?'net importer':'net exporter'],
+    ['Highest anomaly', worst?worst.ipa.toFixed(2):'\u2014', worst?`${worst.st}, ${mLabel(worst.e)}`:'no score'],
+  ].map(([k,v,s])=>`<div class="cpstat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join('');
+
+  /* --- A. real prices, indexed --- */
+  if(!rows.length){
+    $('#cp-price').innerHTML='<div class="empty">FAO does not publish domestic retail prices for this country.</div>';
+    $('#cp-ipa').innerHTML='<div class="empty">No domestic price series, so no anomaly score.</div>';
+    $('#cp-price-lg').innerHTML=''; $('#cp-ipa-lg').innerHTML='';
+  } else {
+    const [from] = cpWindow(rows, 84);
+    const pser = rows.map(d=>{
+      const c=cpSlice(d,from);
+      let base=null; const idx=c.v.map(v=>{ if(v==null) return null; if(base==null) base=v; return +(v/base*100).toFixed(1); });
+      return {name:`${d.st} \u00b7 ${d.n.replace(/\s*\([^)]*\)\s*$/,'')}`.slice(0,46), short:d.st,
+              v:idx, s:c.s, e:d.e, c:CP_STAPLE_COLOUR[d.st]};
+    }).filter(s=>s.v.some(v=>v!=null));
+    lineChart($('#cp-price'), $('#cp-tip-p'), $('#cp-price-lg'), pser,
+      {h:250, r:14, l:44, aria:'Real domestic prices indexed to 100', rules:[{v:100,c:'var(--muted)',l:'100'}]});
+
+    /* --- B. IPA over time --- */
+    const iser = rows.map(d=>{
+      const off=diffM(d.s,from);
+      return {name:d.st, short:d.st, v:(off>=0?d.ipaS.slice(off):d.ipaS), s:(off>=0?from:d.s), e:d.e, c:CP_STAPLE_COLOUR[d.st]};
+    }).filter(s=>s.v.some(v=>v!=null));
+    lineChart($('#cp-ipa'), $('#cp-tip-i'), $('#cp-ipa-lg'), iser,
+      {h:250, r:14, l:44, aria:'SDG 2.c.1 score over time',
+       bands:[{lo:1,hi:99,c:'var(--critical)',o:.13},{lo:.5,hi:1,c:'var(--warning)',o:.16}],
+       rules:[{v:1,c:'var(--critical)',l:'abnormally high'},{v:.5,c:'var(--serious)',l:'moderately high'}]});
+  }
+
+  /* --- C. trade position, every staple --- */
+  const host=$('#cp-trade'), tip=$('#cp-tip-t');
+  const items = M.groups.map(g=>[g,(tr[g]||{}).x||0,(tr[g]||{}).m||0]).filter(r=>r[1]||r[2]);
+  if(!items.length){ host.innerHTML='<div class="empty">No staple trade reported for '+M.year+'.</div>'; }
+  else{
+    const W=Math.max(320,host.clientWidth||800), BH=30, PAD={t:6,r:20,b:24,l:86};
+    const ih=items.length*BH, H=ih+PAD.t+PAD.b, iw=Math.max(80,W-PAD.l-PAD.r);
+    const mx=Math.max(...items.flatMap(r=>[r[1],r[2]]))/1e6;
+    const half=iw/2, zx=PAD.l+half, sx=v=>v/1e6/mx*half*0.94;
+    let g='';
+    for(let i=0;i<=2;i++){ const f=i/2;
+      [-1,1].forEach(sgn=>{ const x=zx+sgn*half*0.94*f;
+        g+=`<line class="gridline" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PAD.t}" y2="${PAD.t+ih}"/>
+            <text class="tick" x="${x.toFixed(1)}" y="${H-8}" text-anchor="middle">${(mx*f).toFixed(mx>=10?0:1)}</text>`; });
+    }
+    items.forEach(([g0,x,m],i)=>{
+      const y=PAD.t+i*BH+5, h=BH-14;
+      const wm=Math.max(1.5,sx(m)), wx=Math.max(1.5,sx(x));
+      g+=`<rect x="${(zx-wm).toFixed(1)}" y="${y}" width="${wm.toFixed(1)}" height="${h}" rx="3" fill="var(--buyc)" data-i="${i}" class="tbar"/>
+          <rect x="${zx.toFixed(1)}" y="${y}" width="${wx.toFixed(1)}" height="${h}" rx="3" fill="var(--sellc)" data-i="${i}" class="tbar"/>
+          <text class="tick" x="${PAD.l-8}" y="${y+h-1}" text-anchor="end" style="font-family:Archivo,sans-serif;font-size:12px;fill:var(--ink-2)">${esc(g0)}</text>`;
+    });
+    g+=`<line class="axisline" x1="${zx.toFixed(1)}" x2="${zx.toFixed(1)}" y1="${PAD.t}" y2="${PAD.t+ih}"/>
+        <text class="tick" x="${(zx-half*0.5).toFixed(1)}" y="${PAD.t-0}" text-anchor="middle" fill="var(--buyc)">buys</text>
+        <text class="tick" x="${(zx+half*0.5).toFixed(1)}" y="${PAD.t-0}" text-anchor="middle" fill="var(--sellc)">sells</text>`;
+    host.innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="height:auto" role="img" aria-label="Staple trade position">${g}</svg>`;
+    host.querySelectorAll('.tbar').forEach(b=>b.addEventListener('mouseenter',e=>{
+      const [g0,x,m]=items[+b.dataset.i];
+      tip.innerHTML=`<div class="th">${esc(g0)}</div>
+        <div class="row"><span class="tipname">Exports</span><b>${(x/1e6).toFixed(2)} Mt</b></div>
+        <div class="row"><span class="tipname">Imports</span><b>${(m/1e6).toFixed(2)} Mt</b></div>
+        <div class="row"><span class="tipname">Net</span><b>${((x-m)/1e6>0?'+':'')+((x-m)/1e6).toFixed(2)} Mt</b></div>`;
+      tip.style.opacity=1;
+      const hb=host.getBoundingClientRect(), rb=b.getBoundingClientRect();
+      tip.style.left=Math.max(4,Math.min(hb.width-tip.offsetWidth-4, rb.left-hb.left))+'px';
+      tip.style.top=Math.max(4, rb.top-hb.top-tip.offsetHeight-6)+'px';
+    }));
+    host.querySelectorAll('.tbar').forEach(b=>b.addEventListener('mouseleave',()=>tip.style.opacity=0));
+  }
+
+  /* --- D. partners for the biggest staple --- */
+  const big = items.slice().sort((a,b)=>(b[1]+b[2])-(a[1]+a[2]))[0];
+  const pel=$('#cp-partners');
+  if(!big){ pel.innerHTML=''; }
+  else{
+    const t2=tr[big[0]]||{}, nm=id=>esc(M.names[id]||id);
+    pel.innerHTML=`<div class="ptab"><div class="cpcap" style="padding:0 0 10px">Largest partners in ${esc(big[0])}, its biggest staple trade</div>
+      <div class="cpgrid">
+        <div>${(t2.xd||[]).length?`<div class="flowh"><i style="background:var(--sellc)"></i>Ships to</div>
+          <ul class="flist">${t2.xd.map(([p,v])=>`<li><span>${nm(p)}</span><b>${(v/1e6).toFixed(2)} Mt</b></li>`).join('')}</ul>`:''}</div>
+        <div style="padding-left:0">${(t2.mo||[]).length?`<div class="flowh"><i style="background:var(--buyc)"></i>Buys from</div>
+          <ul class="flist">${t2.mo.map(([p,v])=>`<li><span>${nm(p)}</span><b>${(v/1e6).toFixed(2)} Mt</b></li>`).join('')}</ul>`:''}</div>
+      </div></div>`;
+  }
+}
+
+
+/* ============ data sources block ============ */
+$('#src-date').textContent = new Date(P.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+$('#src-domn').textContent = P.providers.domTotal;
+const SRC_ROWS = [
+ ['International quotations','FAO GIEWS FPMA Tool v4 &mdash; <span class="mono">fpma.fao.org/giews/v4/global/price_module/api/v1/</span>',
+  `Monthly export and import quotations, ${IE.slice(0,4)} back to 1996 where available`, P.intl.length+' series'],
+ ['Domestic retail prices','FAO GIEWS FPMA Tool v4 (same API)',
+  `National-average retail and wholesale prices in local currency, with FAO's own CPI deflator`, P.dom.length+' series, '+P.src.n_ctry+' countries'],
+ ['Bilateral trade','FAOSTAT Detailed Trade Matrix &mdash; <span class="mono">bulks-faostat.fao.org</span>',
+  `Export and import quantities in tonnes by reporter and partner, ${M.year}; where a country filed no return its flows are rebuilt from partner-reported imports`,
+  '52.4M rows read, '+Object.keys(M.trade).length+' countries kept'],
+ ['Country geometry','Natural Earth 110m via world-atlas',
+  'Polygon boundaries with ISO numeric identifiers, which are M49 and so join to FAOSTAT directly','177 countries'],
+ ['Country names and codes','ISO 3166-1',
+  'Alpha-3 and numeric codes reconciled to one naming table so every panel agrees','249 entries'],
+ ['Cross-check','World Bank Commodity Price Data (the Pink Sheet)',
+  'Downloaded separately and compared month by month against the FAO series it feeds','11 series, 312 months each'],
+];
+$('#src-rows').innerHTML = SRC_ROWS.map(([a,b,c,d])=>
+  `<tr><td class="cname">${a}</td><td>${b}</td><td class="corigin" style="color:var(--ink-2)">${c}</td><td class="r num unit" style="white-space:nowrap">${d}</td></tr>`).join('');
+const provli = arr => arr.map(([n,c])=>`<li><span>${esc(n)}</span><b>${c}</b></li>`).join('');
+$('#src-intl').innerHTML = provli(P.providers.intl);
+$('#src-dom').innerHTML  = provli(P.providers.dom);
+
 /* ============ boot ============ */
-function renderAll(){drawCmp(); drawDomChart(); drawReg(); drawMap(); drawSide(); drawRanks();}
+function renderAll(){drawCmp(); drawDomChart(); drawReg(); drawMap(); drawSide(); drawRanks(); drawCountry();}
 drawDomTable(); renderAll();
 let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(renderAll,180);});
 </script>

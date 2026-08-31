@@ -1,7 +1,7 @@
 import json, math, numpy as np, datetime as dt
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from names import by_a3
+from names import by_a3, A3_TO_NUM as A3_NUM
 from collections import defaultdict
 
 def mkey(s): return s[:7]                      # 'YYYY-MM'
@@ -115,6 +115,8 @@ for m in D['meta']:
          'ipa':an[li] if li is not None else None}
     rec['flag']=flag(rec['ipa'])
     rec['dq']=cpi_break(dps)
+    rec['ipaS']=[None if x is None else round(x,2) for x in an]
+    rec['num']=A3_NUM.get((m.get('iso3') or '').upper())
     dom.append(rec)
 print("domestic series kept:",len(dom),"| countries:",len({d['c'] for d in dom}))
 print("flags:", {f:sum(1 for d in dom if d['flag']==f) for f in ('alert','warning','normal','na')})
@@ -186,7 +188,22 @@ for label,g in grains:
             trans['regs'].append(r)
             print(f"  {label:24} {tag:14} n={r['n']:4} cumE={r['cum_energy']:+.3f} (t={r['t_energy']:+.2f})  cumF={r['cum_fert']:+.3f} (t={r['t_fert']:+.2f})  R2={r['r2']:.3f}")
 
-payload={'generated':dt.date.today().isoformat(),
+# ---------- provenance, derived from the data rather than typed by hand ----------
+import re as _re, collections as _c
+def _clean(x):
+    x=_re.sub(r'\s*\(formerly[^)]*\)','',x or '')
+    return _re.sub(r'\s+',' ',x).strip(' ;.')
+_pi=_c.Counter()
+for m in I['meta']:
+    for part in _re.split(r'\s*;\s*|\s+via\s+', m.get('source_name') or ''):
+        q=_clean(part)
+        if q and len(q)>2: _pi[q]+=1
+_pd=_c.Counter(_clean(m.get('source_name')) for m in D['meta'] if _clean(m.get('source_name')))
+providers={'intl':[[k,v] for k,v in _pi.most_common(18)],
+           'dom':[[k,v] for k,v in _pd.most_common(12)],
+           'domTotal':len(_pd)}
+
+payload={'generated':dt.date.today().isoformat(),'providers':providers,
          'intl':intl,'dom':dom,'trans':trans,
          'src':{'api':'FAO GIEWS FPMA Tool v4 public API (fpma.fao.org/giews/v4/global)',
                 'n_intl':len(intl),'n_dom':len(dom),'n_ctry':len({d['c'] for d in dom})}}
