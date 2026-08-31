@@ -1,0 +1,977 @@
+<title>Agricultural Market Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F6F7F2; --surface:#FCFCFA; --surface-2:#F1F2EC;
+  --ink:#15181A; --ink-2:#4E534C; --muted:#797F76;
+  --hairline:#E1E3DA; --rule:#CDD0C4; --accent:#0E6E64; --accent-soft:#DCEBE8; --on-accent:#FFFFFF;
+  --mapsea:#EDEFE9; --mapnull:#DCDFD6; --mapline:#FCFCFA; --divmid:#F0EFEC;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --good-text:#006300;
+  --shadow:0 1px 2px rgba(21,24,26,.05), 0 8px 24px -16px rgba(21,24,26,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --paper:#0D0F0E; --surface:#181B19; --surface-2:#212523;
+    --ink:#F1F3EE; --ink-2:#BFC4BB; --muted:#8B918700; --muted:#8B9187;
+    --hairline:#2A2E2B; --rule:#3A3F3B; --accent:#4FBFAF; --accent-soft:#12312D; --on-accent:#0B0D0C;
+    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    --good-text:#0ca30c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#0D0F0E; --surface:#181B19; --surface-2:#212523;
+  --ink:#F1F3EE; --ink-2:#BFC4BB; --muted:#8B9187;
+  --hairline:#2A2E2B; --rule:#3A3F3B; --accent:#4FBFAF; --accent-soft:#12312D; --on-accent:#0B0D0C;
+    --mapsea:#121513; --mapnull:#2B2F2C; --mapline:#181B19; --divmid:#383835;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --good-text:#0ca30c;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1160px; margin:0 auto; padding:0 24px 96px}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,"Times New Roman",serif; font-weight:600; text-wrap:balance; margin:0}
+.mono,.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+header{padding:56px 0 28px; border-bottom:2px solid var(--rule)}
+.eyebrow{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:600;
+  color:var(--accent); display:flex; align-items:center; gap:10px; margin-bottom:14px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--hairline)}
+h1{font-size:clamp(34px,5.2vw,52px); line-height:1.04; letter-spacing:-.02em}
+.lede{margin:14px 0 0; max-width:64ch; color:var(--ink-2); font-size:16.5px}
+.prov{
+  margin-top:22px; display:flex; flex-wrap:wrap; gap:6px 22px;
+  font-size:12.5px; color:var(--muted);
+}
+.prov b{color:var(--ink-2); font-weight:500}
+.disclaim{
+  margin-top:18px; padding:10px 14px; border-left:3px solid var(--accent);
+  background:var(--accent-soft); color:var(--ink-2); font-size:13px; border-radius:0 4px 4px 0;
+}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:30px 0 8px}
+.tile{background:var(--surface); border:1px solid var(--hairline); border-radius:6px; padding:16px 18px; box-shadow:var(--shadow)}
+.tile .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.tile .v{font-family:"IBM Plex Mono",monospace; font-size:30px; line-height:1.15; margin-top:8px; letter-spacing:-.02em}
+.tile .s{font-size:12.5px; color:var(--ink-2); margin-top:3px}
+
+/* ---------- sections ---------- */
+section{margin-top:52px}
+.shead{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:6px}
+.slabel{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600}
+h2{font-size:25px; letter-spacing:-.01em; margin-top:4px}
+.sdesc{color:var(--ink-2); font-size:14.5px; max-width:70ch; margin:8px 0 18px}
+.panel{background:var(--surface); border:1px solid var(--hairline); border-radius:6px; box-shadow:var(--shadow); overflow:hidden}
+
+/* ---------- controls ---------- */
+.controls{display:flex; flex-wrap:wrap; gap:8px; padding:14px 16px; border-bottom:1px solid var(--hairline); background:var(--surface-2)}
+.chip{
+  font:inherit; font-size:13px; font-weight:500; padding:5px 12px; cursor:pointer;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink-2);
+  border-radius:100px; transition:background .12s,color .12s,border-color .12s;
+}
+.chip:hover{border-color:var(--accent); color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.chip[aria-pressed="true"] .unit{color:var(--on-accent); opacity:.7}
+.chip:focus-visible,select:focus-visible,th button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.spacer{flex:1}
+.srch{font:inherit; font-size:13px; padding:5px 11px; border:1px solid var(--rule); border-radius:100px; background:var(--surface); color:var(--ink); min-width:190px}
+
+/* ---------- tables ---------- */
+.tscroll{overflow-x:auto; max-height:560px; overflow-y:auto}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+thead th{
+  position:sticky; top:0; z-index:2; background:var(--surface-2); text-align:left;
+  font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600;
+  padding:0; border-bottom:1px solid var(--rule); white-space:nowrap;
+}
+thead th button{
+  font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; font-weight:inherit;
+  background:none; border:0; padding:9px 12px; cursor:pointer; width:100%; text-align:inherit;
+}
+thead th.r, td.r{text-align:right}
+thead th.r button{text-align:right}
+tbody td{padding:8px 12px; border-bottom:1px solid var(--hairline); vertical-align:middle}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+.cname{font-weight:500; color:var(--ink)}
+.corigin{color:var(--muted); font-size:12.5px}
+.pos{color:var(--critical)} .neg{color:var(--good-text)}
+.unit{color:var(--muted); font-size:11.5px}
+
+/* status pills &mdash; icon + label, never colour alone */
+.pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; white-space:nowrap;
+      padding:2px 8px 2px 6px; border-radius:100px; border:1px solid}
+.pill i{width:8px; height:8px; border-radius:2px; display:block; flex:none}
+.p-alert{color:var(--ink); border-color:color-mix(in srgb,var(--critical) 55%,transparent); background:color-mix(in srgb,var(--critical) 11%,transparent)}
+.p-alert i{background:var(--critical); border-radius:50% 50% 50% 0; transform:rotate(-45deg)}
+.p-warning{color:var(--ink-2); border-color:color-mix(in srgb,var(--serious) 55%,transparent); background:color-mix(in srgb,var(--warning) 15%,transparent)}
+.p-warning i{background:var(--warning); clip-path:polygon(50% 0,100% 100%,0 100%); border-radius:0}
+.p-normal{color:var(--muted); border-color:var(--hairline); background:transparent}
+.p-normal i{background:var(--muted); border-radius:50%}
+.p-na{color:var(--muted); border-color:var(--hairline); background:transparent; opacity:.6}
+.p-na i{background:none; border:1px dashed var(--muted)}
+
+/* ---------- charts ---------- */
+.chartbox{padding:18px 16px 8px; position:relative}
+svg{display:block; max-width:100%; overflow:visible}
+.gridline{stroke:var(--hairline); stroke-width:1}
+.axisline{stroke:var(--rule); stroke-width:1}
+.tick{fill:var(--muted); font-size:10.5px; font-family:"IBM Plex Mono",monospace}
+.dlabel{font-size:11.5px; font-weight:600; font-family:"Archivo",sans-serif}
+.legend{display:flex; flex-wrap:wrap; gap:6px 18px; padding:4px 18px 18px; font-size:12.5px; color:var(--ink-2)}
+.legend span{display:inline-flex; align-items:center; gap:7px}
+.legend i{width:14px; height:3px; border-radius:2px; display:block}
+.tip{
+  position:absolute; pointer-events:none; opacity:0; transition:opacity .1s;
+  background:var(--surface); border:1px solid var(--rule); border-radius:5px;
+  box-shadow:var(--shadow); padding:8px 10px; font-size:12.5px; z-index:9; min-width:150px;
+}
+.tip .th{font-weight:600; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+.tip .row{display:flex; align-items:center; gap:8px; justify-content:space-between}
+.tip .row i{width:9px; height:9px; border-radius:2px; flex:none}
+.tip .row b{font-family:"IBM Plex Mono",monospace; font-weight:500}
+.tipname{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:190px}
+
+
+/* ---------- world map ---------- */
+.mapwrap{display:grid; grid-template-columns:1fr; gap:0}
+@media(min-width:940px){.mapwrap{grid-template-columns:minmax(0,1.72fr) minmax(0,1fr)}}
+.mapbox{position:relative; padding:12px 12px 6px; min-width:0}
+.mapside{border-top:1px solid var(--hairline); padding:16px 18px 20px; min-width:0; background:var(--surface-2)}
+@media(min-width:940px){.mapside{border-top:0; border-left:1px solid var(--hairline); max-height:640px; overflow-y:auto}}
+#worldmap svg{overflow:hidden}
+.cshape{cursor:inherit; transition:opacity .1s}
+#worldmap svg{touch-action:pan-y}
+.cshape:hover{opacity:.7}
+.cshape.pinned{stroke:var(--ink); stroke-width:1.4}
+.maplegend{display:flex; align-items:center; flex-wrap:wrap; gap:5px 10px; padding:8px 4px 4px; font-size:11.5px; color:var(--muted)}
+.maplegend.stacked{flex-direction:column; align-items:stretch; gap:5px}
+.lgrow{display:flex; align-items:center; gap:5px}
+.lgk{font-size:11px; font-weight:600; letter-spacing:.04em; min-width:152px; color:var(--ink-2)}
+@media(max-width:520px){.lgk{min-width:0; flex-basis:100%}}
+.lgl{font-family:"IBM Plex Mono",monospace; font-size:10.5px}
+.lgs{width:22px; height:9px; display:block; border-radius:1px}
+.lgi{display:inline-flex; align-items:center; gap:5px}
+.lgi i{width:10px; height:10px; border-radius:2px; display:block}
+.sidet{font-size:18px; margin:0 0 2px}
+.sidep{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+.kv{display:flex; flex-wrap:wrap; gap:4px 20px; margin-bottom:14px}
+.kv > div{display:flex; flex-direction:column}
+.kv span{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.kv b{font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:15px}
+.prbox{border:1px solid var(--hairline); border-radius:5px; padding:10px 12px; margin-bottom:16px; background:var(--surface)}
+.prtop{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px}
+.prtop span{font-size:12px; color:var(--ink-2)}
+.flowh{display:flex; align-items:center; gap:7px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+       color:var(--muted); font-weight:600; margin:14px 0 6px}
+.flowh i{width:16px; height:3px; border-radius:2px; display:block}
+.flist,.rank{list-style:none; margin:0; padding:0; font-size:13px}
+.rank{counter-reset:r}
+.flist li,.rank li{display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px solid var(--hairline)}
+.flist li:last-child,.rank li:last-child{border-bottom:0}
+.flist b,.rank b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink)}
+.flist span,.rank span{color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rank li{counter-increment:r}
+.rank li span::before{content:counter(r) ". "; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px}
+
+/* ---------- regression ---------- */
+.regwrap{display:grid; grid-template-columns:1fr; gap:0}
+.regwrap > div{min-width:0}
+@media(min-width:900px){.regwrap{grid-template-columns:1.05fr .95fr}}
+.regwrap > div:first-child{border-right:1px solid var(--hairline)}
+@media(max-width:899px){.regwrap > div:first-child{border-right:0; border-bottom:1px solid var(--hairline)}}
+.sig{font-size:11px; color:var(--muted)}
+.tstat{font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+.strong{color:var(--ink); font-weight:600}
+
+/* ---------- notes ---------- */
+.note{margin-top:52px; border-top:2px solid var(--rule); padding-top:26px}
+.note h3{font-size:17px; margin-bottom:8px}
+.note p, .note li{color:var(--ink-2); font-size:13.5px; max-width:80ch}
+.note ul{padding-left:18px; margin:8px 0}
+.note code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:1px 5px; border-radius:3px}
+.grid2{display:grid; gap:26px; grid-template-columns:1fr}
+@media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+.empty{padding:36px 16px; text-align:center; color:var(--muted); font-size:13.5px}
+@media (max-width:640px){
+  .wrap{padding:0 16px 72px}
+  header{padding:36px 0 22px}
+  .lede{font-size:15.5px}
+  .tiles{grid-template-columns:1fr 1fr; gap:10px}
+  .tile{padding:13px 14px}
+  .tile .v{font-size:25px}
+  section{margin-top:38px}
+  h2{font-size:21px}
+  .controls{padding:11px 12px; gap:6px}
+  .chip{font-size:12.5px; padding:4px 10px}
+  .srch{min-width:0; flex:1}
+  table{font-size:12.5px}
+  tbody td{padding:7px 9px}
+  .chartbox{padding:14px 10px 6px}
+  .tscroll{max-height:440px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Rebuild of an FAO GIEWS product &middot; August 2026</div>
+  <h1>Agricultural Market Monitor</h1>
+  <p class="lede">A working replication of FAO's Food Price Monitoring and Analysis tool, rebuilt from the live GIEWS API: international commodity quotations, the SDG&nbsp;2.c.1 food price anomaly screen across 76 countries, and a regression on what actually moves grain prices.</p>
+  <div class="prov">
+    <span>Source <b>FAO GIEWS FPMA Tool v4 public API</b></span>
+    <span>Retrieved <b id="pv-gen"></b></span>
+    <span>International through <b id="pv-ie"></b></span>
+    <span>Domestic through <b id="pv-de"></b></span>
+  </div>
+  <p class="disclaim"><b>Independent work, not an FAO publication.</b> Built by Yibin Li from FAO's public data API. FAO publishes the official version of these indicators through the FPMA Tool; anomaly values here are computed independently and may differ from FAO's published figures (see Method).</p>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<section>
+  <div class="shead"><div>
+    <div class="slabel">Layer 1 &middot; International quotations</div>
+    <h2>What world markets are quoting</h2>
+  </div></div>
+  <p class="sdesc">Every international price series FAO tracks, with the change over one month, one year and three years, and the SDG&nbsp;2.c.1 anomaly score for the latest month. Sort any column; filter by commodity group.</p>
+  <div class="panel">
+    <div class="controls" id="intl-controls">
+      <div class="spacer"></div>
+      <input class="srch" id="intl-search" type="search" placeholder="Search commodity or origin" aria-label="Search international series">
+    </div>
+    <div class="tscroll"><table id="intl-table">
+      <thead><tr>
+        <th><button data-k="n">Commodity</button></th>
+        <th><button data-k="o">Origin</button></th>
+        <th class="r"><button data-k="last">Latest</button></th>
+        <th class="r"><button data-k="mom">1&nbsp;month</button></th>
+        <th class="r"><button data-k="yoy">12&nbsp;months</button></th>
+        <th class="r"><button data-k="y3">36&nbsp;months</button></th>
+        <th class="r"><button data-k="ipa">IPA</button></th>
+        <th><button data-k="flag">Status</button></th>
+        <th>Since 2016</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><div>
+    <div class="slabel">Layer 2 &middot; Origin spreads</div>
+    <h2>The same grain, priced by origin</h2>
+  </div></div>
+  <p class="sdesc">Export quotations for one commodity across every origin FAO monitors. The spread between origins is where trade policy, freight and harvest timing show up, and it is what an import-dependent buyer actually faces.</p>
+  <div class="panel">
+    <div class="controls" id="cmp-controls"></div>
+    <div class="chartbox"><div id="cmp-chart"></div><div class="tip" id="cmp-tip"></div></div>
+    <div class="legend" id="cmp-legend"></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><div>
+    <div class="slabel">Layer 3 &middot; Domestic prices, 76 countries</div>
+    <h2>Where staple prices are abnormal</h2>
+  </div></div>
+  <p class="sdesc">National-average retail prices, deflated by each country's own CPI, then screened with SDG&nbsp;2.c.1. The indicator asks whether this month's price growth is unusual <em>for this month, in this market</em>, so it separates a genuine anomaly from ordinary seasonality.</p>
+  <div class="panel">
+    <div class="controls" id="dom-controls"></div>
+    <div class="chartbox"><div id="dom-chart"></div><div class="tip" id="dom-tip"></div></div>
+    <div class="tscroll"><table id="dom-table">
+      <thead><tr>
+        <th><button data-k="c">Country</button></th>
+        <th><button data-k="n">Commodity</button></th>
+        <th class="r"><button data-k="last">Latest</button></th>
+        <th class="r"><button data-k="yoyN">12m nominal</button></th>
+        <th class="r"><button data-k="yoyR">12m real</button></th>
+        <th class="r"><button data-k="ipa">IPA</button></th>
+        <th><button data-k="flag">Status</button></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><div>
+    <div class="slabel">Layer 4 &middot; Trade network</div>
+    <h2>Who ships the calories, and to whom</h2>
+  </div></div>
+  <p class="sdesc">Bilateral trade in eight staples, from FAO's detailed trade matrix. Click any country to pin it: the arrows then show its largest export destinations and import origins, with width scaled to tonnage. Colour on the map is whichever measure you pick, including the price-anomaly screen from the layer above.</p>
+  <div class="panel">
+    <div class="controls" id="map-c1"></div>
+    <div class="controls" id="map-c2"></div>
+    <div class="mapwrap">
+      <div class="mapbox">
+        <div id="worldmap"></div>
+        <div class="tip" id="map-tip"></div>
+        <div class="maplegend" id="map-legend"></div>
+      </div>
+      <aside class="mapside" id="map-side"></aside>
+    </div>
+    <p class="sig" id="map-note"></p>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><div>
+    <div class="slabel">Layer 5 &middot; Price drivers</div>
+    <h2>What moves grain prices, and when</h2>
+  </div></div>
+  <p class="sdesc">Monthly log-difference regressions of export quotations on Brent crude and Black Sea urea, zero to six lags, Newey&ndash;West standard errors. Run on the full sample and again from 2019, which brackets the fertiliser price shock.</p>
+  <div class="panel"><div class="regwrap">
+    <div>
+      <div class="tscroll" style="max-height:none"><table id="reg-table">
+        <thead><tr>
+          <th>Dependent series</th><th>Sample</th>
+          <th class="r">Energy</th><th class="r">Fertiliser</th>
+          <th class="r">R&sup2;</th><th class="r">n</th>
+        </tr></thead><tbody></tbody>
+      </table></div>
+      <p class="sig" style="padding:10px 14px 16px;margin:0">Cumulative elasticity = sum of the seven lag coefficients. HAC standard error in parentheses, <em>t</em>-statistic below. A cumulative elasticity of 0.42 means a 10&nbsp;percent rise in urea is followed by a 4.2&nbsp;percent rise in wheat over the following half-year.</p>
+    </div>
+    <div>
+      <div class="controls" id="reg-controls"></div>
+      <div class="chartbox"><div id="reg-chart"></div><div class="tip" id="reg-tip"></div></div>
+      <div class="legend" id="reg-legend"></div>
+    </div>
+  </div></div>
+  <p class="sdesc" id="reg-read" style="margin-top:16px"></p>
+</section>
+
+<div class="note">
+  <h3>Method</h3>
+  <div class="grid2">
+    <div>
+      <p><b>SDG 2.c.1, Indicator of Food Price Anomalies.</b> Following FAO's published metadata: a compound growth rate is computed over three months and over twelve months, <code>CGR = (P_t / P_{t-k})^(1/k) &minus; 1</code>. Each is standardised against the distribution of that same calendar month across all available years, so seasonality is differenced out rather than assumed away. The two standardised components are combined as <code>IFPA = 0.4&middot;Quarterly + 0.6&middot;Annual</code>. A score below 0.5 is normal, 0.5 to 1.0 is moderately high, and 1.0 or above is abnormally high.</p>
+      <p><b>One departure, stated plainly.</b> FAO's metadata specifies a <em>weighted</em> mean and standard deviation across years but does not publish the weighting scheme. This rebuild uses equal weights and requires at least five historical observations of the same calendar month. Scores here are therefore indicative and will not match FAO's published values exactly. Domestic series are screened on CPI-deflated prices, international series on nominal US dollars.</p>
+    </div>
+    <div>
+      <p><b>Pass-through regression.</b> <code>&Delta;ln(grain) = &alpha; + &Sigma;&beta;&#x2C7C;&Delta;ln(Brent)&#x209C;&#x208B;&#x2C7C; + &Sigma;&gamma;&#x2C7C;&Delta;ln(urea)&#x209C;&#x208B;&#x2C7C; + &epsilon;</code> for j = 0&hellip;6, estimated by OLS with Newey&ndash;West HAC covariance at six lags. The cumulative elasticity is the sum of a block's coefficients and its standard error comes from the full HAC covariance matrix, so the covariance between lag coefficients is carried rather than dropped.</p>
+      <p><b>Data.</b> All series retrieved from the FAO GIEWS FPMA Tool v4 public API. Underlying sources include the International Grains Council, USDA, Oil World, the FAO rice price update, APK-Inform, the International Sugar Organization, Dairy Market News and the World Bank Pink Sheet; domestic series come from national statistical offices and market information systems. Series with fewer than 36 monthly observations are dropped.</p>
+      <p><b>Citation.</b> FAO. 2026. <em>Global Information and Early Warning System on Food and Agriculture (GIEWS): Food Price Monitoring and Analysis Tool.</em> Accessed on 31&nbsp;August&nbsp;2026. https://fpma.fao.org/giews/fpmat4/ Licence: CC&nbsp;BY&nbsp;4.0. FAO statistical databases are released under the Creative Commons Attribution 4.0 International licence; this rebuild adapts that data and is redistributed on the same terms. FAO has not reviewed or endorsed it.</p><p style="color:var(--muted)"><b>Built by</b> Yibin Li &middot; <span class="mono" id="pv-counts"></span></p>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+if(!document.querySelector('meta[name="viewport"]')){
+  const m=document.createElement('meta'); m.name='viewport';
+  m.content='width=device-width, initial-scale=1'; document.head.appendChild(m);
+}
+const P = /*__PAYLOAD__*/null;
+const $ = (s,r=document)=>r.querySelector(s);
+const S = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'].map(v=>`var(${v})`);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mLabel = k => k ? MON[+k.slice(5,7)-1]+' '+k.slice(0,4) : '';
+const addM = (k,i)=>{let y=+k.slice(0,4), m=+k.slice(5,7)-1+i; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+'-'+String(m+1).padStart(2,'0');};
+const diffM = (a,b)=>(+b.slice(0,4)-+a.slice(0,4))*12 + (+b.slice(5,7)-+a.slice(5,7));
+const nf = (v,d=0)=> v==null? '&mdash;' : v.toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pf = v => v==null? '<span class="unit">&mdash;</span>' : `<span class="${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v.toFixed(1)}%</span>`;
+const FLAGS = {alert:['p-alert','Abnormally high'], warning:['p-warning','Moderately high'], normal:['p-normal','Normal'], na:['p-na','No score']};
+const pill = f => {const [c,l]=FLAGS[f]||FLAGS.na; return `<span class="pill ${c}"><i></i>${l}</span>`;};
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ header + tiles ============ */
+const IE = P.intl.reduce((a,r)=>r.e>a?r.e:a,''), DE = P.dom.reduce((a,r)=>r.e>a?r.e:a,'');
+$('#pv-gen').textContent = new Date(P.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+$('#pv-ie').textContent = mLabel(IE); $('#pv-de').textContent = mLabel(DE);
+const alerts = P.dom.filter(d=>d.flag==='alert').length + P.intl.filter(d=>d.flag==='alert').length;
+const warns  = P.dom.filter(d=>d.flag==='warning').length + P.intl.filter(d=>d.flag==='warning').length;
+$('#pv-counts').textContent = `${P.intl.length} international + ${P.dom.length} domestic series &middot; ${P.src.n_ctry} countries`;
+$('#tiles').innerHTML = [
+  ['Price series tracked', P.intl.length + P.dom.length, `${P.intl.length} international, ${P.dom.length} domestic`],
+  ['Countries screened', P.src.n_ctry, 'national-average retail prices'],
+  ['Abnormally high', alerts, 'IPA at or above 1.0 this month'],
+  ['Moderately high', warns, 'IPA between 0.5 and 1.0'],
+].map(([k,v,s])=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+
+/* ============ sparkline ============ */
+function spark(v, w=88, h=22){
+  const pts = v.map((y,i)=>[i,y]).filter(p=>p[1]!=null);
+  if(pts.length<4) return '';
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const sx=i=>x1===x0?0:(i-x0)/(x1-x0)*(w-3)+1.5, sy=y=>y1===y0?h/2:h-2-(y-y0)/(y1-y0)*(h-4);
+  const d = pts.map((p,i)=>(i?'L':'M')+sx(p[0]).toFixed(1)+' '+sy(p[1]).toFixed(1)).join(' ');
+  const last = pts[pts.length-1];
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>
+    <circle cx="${sx(last[0]).toFixed(1)}" cy="${sy(last[1]).toFixed(1)}" r="2.2" fill="var(--accent)"/></svg>`;
+}
+
+/* ============ generic sortable table ============ */
+function sortable(tableSel, getRows, render){
+  const t=$(tableSel); let key=null, dir=-1;
+  const draw=()=>{
+    let rows=getRows();
+    if(key) rows=[...rows].sort((a,b)=>{
+      const x=a[key], y=b[key];
+      if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1;
+      return (typeof x==='string' ? x.localeCompare(y) : x-y)*dir;
+    });
+    const tb=t.querySelector('tbody');
+    tb.innerHTML = rows.length ? rows.map(render).join('') : '';
+    if(!rows.length) tb.innerHTML = `<tr><td colspan="9" class="empty">No series match this filter.</td></tr>`;
+  };
+  t.querySelectorAll('thead button[data-k]').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.k; if(k===key) dir=-dir; else {key=k; dir = (k==='n'||k==='o'||k==='c'||k==='flag')?1:-1;}
+    t.querySelectorAll('thead button').forEach(x=>x.textContent=x.textContent.replace(/[&#9662;&#9652;]\s*$/,'').trim());
+    b.textContent = b.textContent+' '+(dir<0?'&#9662;':'&#9652;');
+    draw();
+  }));
+  return draw;
+}
+
+/* ============ Layer 1 : international table ============ */
+const FAMS = [...new Set(P.intl.map(r=>r.f))].sort();
+let iFam='All', iQ='';
+$('#intl-controls').insertAdjacentHTML('afterbegin',
+  ['All',...FAMS].map(f=>`<button class="chip" data-f="${esc(f)}" aria-pressed="${f==='All'}">${esc(f)}</button>`).join(''));
+$('#intl-controls').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  iFam=b.dataset.f;
+  $('#intl-controls').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', String(c===b)));
+  drawIntl();
+});
+$('#intl-search').addEventListener('input',e=>{iQ=e.target.value.toLowerCase(); drawIntl();});
+const drawIntl = sortable('#intl-table',
+  ()=>P.intl.filter(r=>(iFam==='All'||r.f===iFam) && (!iQ || (r.n+' '+r.o).toLowerCase().includes(iQ))),
+  r=>`<tr>
+    <td><span class="cname">${esc(r.n.replace(/\s*\([^)]*\)\s*$/,''))}</span><br><span class="corigin">${esc((r.n.match(/\(([^)]*)\)\s*$/)||[,''])[1])}</span></td>
+    <td class="corigin">${esc(r.o)}</td>
+    <td class="r num">${nf(r.last, r.last<10?2:0)}<br><span class="unit">USD/${esc(r.u)}</span></td>
+    <td class="r num">${pf(r.mom)}</td><td class="r num">${pf(r.yoy)}</td><td class="r num">${pf(r.y3)}</td>
+    <td class="r num">${r.ipa==null?'<span class="unit">&mdash;</span>':r.ipa.toFixed(2)}</td>
+    <td>${pill(r.flag)}</td><td>${spark(r.v.slice(Math.max(0,diffM(r.s,'2016-01'))))}</td></tr>`);
+drawIntl();
+
+/* ============ line chart engine ============ */
+function lineChart(host, tipEl, legendEl, series, opts={}){
+  const W=host.clientWidth||760, H=opts.h||300, M={t:14,r:opts.r??118,b:26,l:opts.l??52};
+  const iw=Math.max(120,W-M.l-M.r), ih=H-M.t-M.b;
+  const start=series.reduce((a,s)=>!a||s.s<a?s.s:a,null);
+  const end=series.reduce((a,s)=>!a||s.e>a?s.e:a,null);
+  if(!start){host.innerHTML='<div class="empty">No data.</div>';legendEl.innerHTML='';return;}
+  const N=diffM(start,end)+1;
+  const vals=series.flatMap(s=>s.v.filter(v=>v!=null));
+  if(!vals.length){host.innerHTML='<div class="empty">No data.</div>';return;}
+  let lo=Math.min(...vals), hi=Math.max(...vals); const pad=(hi-lo)*0.08||1; lo-=pad; hi+=pad;
+  if(opts.zero) lo=Math.min(0,lo);
+  const sx=i=>M.l+(N<2?0:i/(N-1)*iw), sy=v=>M.t+ih-(v-lo)/(hi-lo)*ih;
+  const ticks=(n=5)=>{const o=[];for(let i=0;i<=n;i++)o.push(lo+(hi-lo)*i/n);return o;};
+  let g='';
+  ticks().forEach(v=>{g+=`<line class="gridline" x1="${M.l}" x2="${M.l+iw}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}"/>
+    <text class="tick" x="${M.l-8}" y="${(sy(v)+3.5).toFixed(1)}" text-anchor="end">${nf(v, hi<20?2:0)}</text>`;});
+  const step=Math.max(1,Math.ceil(N/7/12)*12);
+  for(let i=0;i<N;i+=step){const k=addM(start,i);
+    g+=`<text class="tick" x="${sx(i).toFixed(1)}" y="${H-6}" text-anchor="middle">${k.slice(0,4)}</text>`;}
+  g+=`<line class="axisline" x1="${M.l}" x2="${M.l+iw}" y1="${M.t+ih}" y2="${M.t+ih}"/>`;
+  series.forEach((s,si)=>{
+    const off=diffM(start,s.s); let d='',open=false;
+    s.v.forEach((v,i)=>{const x=sx(off+i);
+      if(v==null){open=false;return;} d+=(open?'L':'M')+x.toFixed(1)+' '+sy(v).toFixed(1)+' '; open=true;});
+    g+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    let li=-1; for(let i=s.v.length-1;i>=0;i--) if(s.v[i]!=null){li=i;break;}
+    if(li>=0){const x=sx(off+li), y=sy(s.v[li]);
+      g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${s.c}" stroke="var(--surface)" stroke-width="2"/>`;
+      if(series.length<=4 && M.r>60) g+=`<text class="dlabel" x="${(x+9).toFixed(1)}" y="${(y+4).toFixed(1)}" fill="${s.c}">${esc(s.short)}</text>`;}
+  });
+  g+=`<line id="cross" x1="0" x2="0" y1="${M.t}" y2="${M.t+ih}" stroke="var(--rule)" stroke-width="1" opacity="0"/>`;
+  host.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria||'Price chart')}">${g}</svg>`;
+  legendEl.innerHTML = series.length>1 ? series.map(s=>`<span><i style="background:${s.c}"></i>${esc(s.name)}</span>`).join('') : '';
+  const svg=host.querySelector('svg'), cross=svg.querySelector('#cross');
+  const move=e=>{
+    const rc=svg.getBoundingClientRect(), px=(e.clientX-rc.left)*(W/rc.width);
+    let i=Math.round((px-M.l)/(iw||1)*(N-1)); i=Math.max(0,Math.min(N-1,i));
+    cross.setAttribute('x1',sx(i)); cross.setAttribute('x2',sx(i)); cross.setAttribute('opacity','1');
+    const k=addM(start,i);
+    const rows=series.map(s=>{const j=i-diffM(start,s.s); return [s, (j>=0&&j<s.v.length)?s.v[j]:null];})
+                     .filter(r=>r[1]!=null).sort((a,b)=>b[1]-a[1]);
+    if(!rows.length){tipEl.style.opacity=0;return;}
+    tipEl.innerHTML=`<div class="th">${mLabel(k)}</div>`+rows.map(([s,v])=>
+      `<div class="row"><i style="background:${s.c}"></i><span class="tipname">${esc(s.name)}</span><b>${nf(v,v<20?2:0)}</b></div>`).join('');
+    tipEl.style.opacity=1;
+    const hb=host.getBoundingClientRect();
+    let left=e.clientX-hb.left+14; if(left+tipEl.offsetWidth>hb.width) left=e.clientX-hb.left-tipEl.offsetWidth-14;
+    tipEl.style.left=Math.max(4,left)+'px';
+    tipEl.style.top=Math.min(hb.height-tipEl.offsetHeight-4, Math.max(4, e.clientY-hb.top-tipEl.offsetHeight/2))+'px';
+  };
+  svg.addEventListener('mousemove',move);
+  svg.addEventListener('mouseleave',()=>{tipEl.style.opacity=0;cross.setAttribute('opacity','0');});
+}
+
+/* ============ Layer 2 : origin comparison ============ */
+const GROUPS = [
+  ['Wheat',   r=>/^wheat/i.test(r.n)],
+  ['Maize',   r=>/^maize/i.test(r.n)],
+  ['Rice',    r=>/^rice/i.test(r.n)],
+  ['Fertiliser', r=>r.f==='Fertilisers'],
+  ['Oilseeds',r=>/^(soybean|palm|sunflower|rape)/i.test(r.n)],
+  ['Dairy',   r=>r.f==='Dairy'],
+];
+let cmpG='Wheat';
+$('#cmp-controls').innerHTML = GROUPS.map(([g])=>`<button class="chip" data-g="${g}" aria-pressed="${g===cmpG}">${g}</button>`).join('')
+  + `<div class="spacer"></div><span class="sig" style="align-self:center">USD per tonne, last 10 years</span>`;
+function drawCmp(){
+  const f = (GROUPS.find(g=>g[0]===cmpG)||GROUPS[0])[1];
+  const rows = P.intl.filter(f).filter(r=>r.u==='tonne').sort((a,b)=>(b.last??0)-(a.last??0)).slice(0,8);
+  const from='2016-01';
+  const series = rows.map((r,i)=>{
+    const off=Math.max(0,diffM(r.s,from));
+    return {name:`${r.o} &mdash; ${r.n.replace(/^[A-Za-z ]+\(/,'').replace(/\)$/,'')}`.slice(0,58),
+            short:r.o.split(/[ (,]/)[0], v:r.v.slice(off), s:off?from:r.s, e:r.e, c:S[i%8]};
+  });
+  const narrow = (host=>host.clientWidth<520)($('#cmp-chart'));
+  lineChart($('#cmp-chart'), $('#cmp-tip'), $('#cmp-legend'), series, {h:narrow?250:320, r:narrow?10:34, l:narrow?42:52, aria:cmpG+' export quotations by origin'});
+}
+$('#cmp-controls').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
+  cmpG=b.dataset.g; $('#cmp-controls').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b))); drawCmp();});
+
+/* ============ Layer 3 : domestic ============ */
+const STAPLES = [...new Set(P.dom.map(d=>d.st))].sort((a,b)=>
+  P.dom.filter(d=>d.st===b).length - P.dom.filter(d=>d.st===a).length);
+let domSt = STAPLES[0];
+$('#dom-controls').innerHTML = STAPLES.map(s=>{
+  const n=P.dom.filter(d=>d.st===s).length;
+  return `<button class="chip" data-s="${esc(s)}" aria-pressed="${s===domSt}">${esc(s)} <span class="unit">${n}</span></button>`;
+}).join('') + `<div class="spacer"></div><span class="sig" style="align-self:center">CPI-deflated, 12-month change</span>`;
+function drawDomChart(){
+  const rows = P.dom.filter(d=>d.st===domSt && d.yoyR!=null).sort((a,b)=>b.yoyR-a.yoyR);
+  const host=$('#dom-chart'), tip=$('#dom-tip');
+  if(!rows.length){host.innerHTML='<div class="empty">No series.</div>';return;}
+  const W=host.clientWidth||760, nar=W<520, BH=nar?17:19, M={t:8,r:nar?42:56,b:26,l:nar?92:126}, ih=rows.length*BH, H=ih+M.t+M.b;
+  const iw=Math.max(120,W-M.l-M.r);
+  const lo=Math.min(0,...rows.map(r=>r.yoyR)), hi=Math.max(0,...rows.map(r=>r.yoyR));
+  const sx=v=>M.l+(v-lo)/((hi-lo)||1)*iw;
+  const col=f=> f==='alert'?'var(--critical)': f==='warning'?'var(--serious)':'var(--accent)';
+  let g='';
+  const nTicks=5;
+  for(let i=0;i<=nTicks;i++){const v=lo+(hi-lo)*i/nTicks, x=sx(v);
+    g+=`<line class="gridline" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${M.t}" y2="${M.t+ih}"/>
+        <text class="tick" x="${x.toFixed(1)}" y="${H-8}" text-anchor="middle">${v.toFixed(0)}%</text>`;}
+  const zx=sx(0);
+  rows.forEach((r,i)=>{
+    const y=M.t+i*BH+3, h=BH-6, x=Math.min(zx,sx(r.yoyR)), w=Math.max(2,Math.abs(sx(r.yoyR)-zx));
+    const rad=Math.min(4,w);
+    g+=`<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="${rad}" fill="${col(r.flag)}" data-i="${i}"/>
+        <text class="tick" x="${M.l-9}" y="${y+h-2.5}" text-anchor="end" style="font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-2)">${esc(r.c.length>17?r.c.slice(0,16)+'&hellip;':r.c)}</text>
+        <text class="tick" x="${(Math.max(zx,sx(r.yoyR))+6).toFixed(1)}" y="${y+h-2.5}" style="font-size:10.5px">${r.yoyR>0?'+':''}${r.yoyR.toFixed(0)}%</text>`;
+  });
+  g+=`<line class="axisline" x1="${zx.toFixed(1)}" x2="${zx.toFixed(1)}" y1="${M.t}" y2="${M.t+ih}"/>`;
+  host.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Real 12-month change in ${esc(domSt)} prices by country">${g}</svg>`;
+  const svg=host.querySelector('svg');
+  svg.querySelectorAll('rect[data-i]').forEach(rect=>{
+    rect.addEventListener('mouseenter',e=>{
+      const r=rows[+rect.dataset.i];
+      tip.innerHTML=`<div class="th">${esc(r.c)}</div>
+        <div class="row"><span class="tipname">${esc(r.n)}</span></div>
+        <div class="row"><span class="tipname">Real 12m</span><b>${r.yoyR>0?'+':''}${r.yoyR.toFixed(1)}%</b></div>
+        <div class="row"><span class="tipname">Nominal 12m</span><b>${r.yoyN==null?'&mdash;':(r.yoyN>0?'+':'')+r.yoyN.toFixed(1)+'%'}</b></div>
+        <div class="row"><span class="tipname">IPA</span><b>${r.ipa==null?'&mdash;':r.ipa.toFixed(2)}</b></div>
+        <div style="margin-top:6px">${pill(r.flag)}</div>`;
+      tip.style.opacity=1;
+      const hb=host.getBoundingClientRect(), rb=rect.getBoundingClientRect();
+      let left=rb.right-hb.left+12; if(left+190>hb.width) left=rb.left-hb.left-tip.offsetWidth-12;
+      tip.style.left=Math.max(4,left)+'px';
+      tip.style.top=Math.max(4,Math.min(hb.height-tip.offsetHeight-4, rb.top-hb.top-tip.offsetHeight/2+rb.height/2))+'px';
+    });
+    rect.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+}
+const drawDomTable = sortable('#dom-table', ()=>P.dom.filter(d=>d.st===domSt), r=>`<tr>
+  <td class="cname">${esc(r.c)}</td>
+  <td class="corigin">${esc(r.n)}</td>
+  <td class="r num">${nf(r.last, r.last<10?2:0)}<br><span class="unit">${esc(r.cur||'')}/${esc(r.u||'')}</span></td>
+  <td class="r num">${pf(r.yoyN)}</td><td class="r num">${pf(r.yoyR)}</td>
+  <td class="r num">${r.ipa==null?'<span class="unit">&mdash;</span>':r.ipa.toFixed(2)}</td>
+  <td>${pill(r.flag)}</td></tr>`);
+$('#dom-controls').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
+  domSt=b.dataset.s; $('#dom-controls').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
+  drawDomChart(); drawDomTable();});
+
+/* ============ Layer 4 : regressions ============ */
+const st = (b,se,t)=>`${b>0?'+':''}${b.toFixed(3)}<br><span class="unit">(${se.toFixed(3)})</span><br><span class="tstat ${Math.abs(t)>=1.96?'strong':''}">t&nbsp;${t>0?'+':''}${t.toFixed(2)}</span>`;
+$('#reg-table').querySelector('tbody').innerHTML = P.trans.regs.map(r=>`<tr>
+  <td class="cname">${esc(r.dep)}</td><td class="corigin">${esc(r.sample)}<br><span class="unit">${esc(r.span)}</span></td>
+  <td class="r num">${st(r.cum_energy,r.se_energy,r.t_energy)}</td>
+  <td class="r num">${st(r.cum_fert,r.se_fert,r.t_fert)}</td>
+  <td class="r num">${r.r2.toFixed(3)}</td><td class="r num">${r.n}</td></tr>`).join('');
+const best = P.trans.regs.filter(r=>r.sample!=='Full sample').sort((a,b)=>Math.abs(b.t_fert)-Math.abs(a.t_fert))[0];
+$('#reg-read').innerHTML = `<b>What the numbers say.</b> Over the full sample neither driver is statistically distinguishable from zero, which is the usual result: two decades of monthly noise swamp the signal. Restricting to 2019 onwards changes the picture for the two fertiliser-intensive grains. Cumulative fertiliser pass-through to ${esc(best.dep)} is ${best.cum_fert.toFixed(2)} with <em>t</em> = ${best.t_fert.toFixed(2)}, and maize behaves the same way, while rice shows nothing. That split is economically sensible rather than an artefact: rice is far less fertiliser-intensive per tonne of output and its export prices are driven more by Asian stockholding and export restrictions than by input costs. Energy loses significance once fertiliser is in the equation, which is what you would expect if crude reaches grain markets mainly <em>through</em> the nitrogen fertiliser channel rather than directly.`;
+let regSel = 0;
+$('#reg-controls').innerHTML = P.trans.regs.map((r,i)=>
+  `<button class="chip" data-i="${i}" aria-pressed="${i===0}">${esc(r.dep.split(' (')[0])} &middot; ${esc(r.sample==='Full sample'?'full':'2019+')}</button>`).join('');
+function drawReg(){
+  const r=P.trans.regs[regSel], host=$('#reg-chart'), tip=$('#reg-tip');
+  const W=host.clientWidth||420, H=248, M={t:12,r:12,b:30,l:46};
+  const iw=W-M.l-M.r, ih=H-M.t-M.b, L=r.be.length;
+  const all=[...r.be,...r.bf]; let lo=Math.min(0,...all), hi=Math.max(0,...all);
+  const p=(hi-lo)*.1||.01; lo-=p; hi+=p;
+  const sy=v=>M.t+ih-(v-lo)/(hi-lo)*ih, gw=iw/L, bw=Math.min(15,(gw-8)/2);
+  let g='';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;
+    g+=`<line class="gridline" x1="${M.l}" x2="${M.l+iw}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}"/>
+        <text class="tick" x="${M.l-7}" y="${(sy(v)+3.5).toFixed(1)}" text-anchor="end">${v.toFixed(2)}</text>`;}
+  const z=sy(0);
+  const put=(arr,off,c,lab)=>arr.forEach((b,j)=>{
+    const x=M.l+j*gw+gw/2+off, y=Math.min(z,sy(b)), h=Math.max(1.5,Math.abs(sy(b)-z));
+    g+=`<rect x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" fill="${c}" data-lab="${lab}" data-j="${j}" data-v="${b}"/>`;});
+  put(r.be,-bw/2-1,S[0],'Brent crude'); put(r.bf,bw/2+1,S[1],'Urea');
+  for(let j=0;j<L;j++) g+=`<text class="tick" x="${(M.l+j*gw+gw/2).toFixed(1)}" y="${H-9}" text-anchor="middle">${j}</text>`;
+  g+=`<line class="axisline" x1="${M.l}" x2="${M.l+iw}" y1="${z.toFixed(1)}" y2="${z.toFixed(1)}"/>
+      <text class="tick" x="${M.l+iw/2}" y="${H+2}" text-anchor="middle" style="opacity:0">lag</text>`;
+  host.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Lag coefficients for ${esc(r.dep)}">${g}</svg>
+    <div class="sig" style="text-align:center;margin-top:2px">lag, months</div>`;
+  $('#reg-legend').innerHTML=`<span><i style="background:${S[0]}"></i>&Delta;ln Brent crude</span><span><i style="background:${S[1]}"></i>&Delta;ln urea (Black Sea)</span>`;
+  host.querySelectorAll('rect[data-j]').forEach(rc=>{
+    rc.addEventListener('mouseenter',e=>{
+      tip.innerHTML=`<div class="th">Lag ${rc.dataset.j} months</div><div class="row"><span class="tipname">${rc.dataset.lab}</span><b>${(+rc.dataset.v>0?'+':'')+(+rc.dataset.v).toFixed(4)}</b></div>`;
+      tip.style.opacity=1;
+      const hb=host.getBoundingClientRect(), rb=rc.getBoundingClientRect();
+      tip.style.left=Math.max(4,Math.min(hb.width-tip.offsetWidth-4, rb.left-hb.left-tip.offsetWidth/2+rb.width/2))+'px';
+      tip.style.top=Math.max(4, rb.top-hb.top-tip.offsetHeight-8)+'px';
+    });
+    rc.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+}
+$('#reg-controls').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
+  regSel=+b.dataset.i; $('#reg-controls').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b))); drawReg();});
+
+/* ============ Layer 4 : world trade map ============ */
+const M = /*__MAP__*/null;
+
+/* --- topojson decode (no library) --- */
+function decodeArcs(t){
+  const {scale:[sx,sy],translate:[tx,ty]}=t.transform;
+  return t.arcs.map(a=>{let x=0,y=0;return a.map(([dx,dy])=>{x+=dx;y+=dy;return [x*sx+tx,y*sy+ty];});});
+}
+function ringOf(A,idxs){
+  const p=[];
+  for(const i of idxs){const a=i<0?A[~i].slice().reverse():A[i]; if(p.length)p.push(...a.slice(1)); else p.push(...a);}
+  return p;
+}
+const MAPARCS = decodeArcs(M.topo);
+const SHAPES = M.topo.objects.countries.geometries.map(g=>({
+  id: String(parseInt(g.id,10)),
+  name: (g.properties&&g.properties.name)||'',
+  rings: (g.type==='MultiPolygon'?g.arcs:[g.arcs]).flatMap(poly=>poly.map(r=>unwrapRing(ringOf(MAPARCS,r))))
+})).filter(s=>s.id!=='NaN');
+
+/* --- projection: equirectangular, poles trimmed --- */
+const LAT_T=83, LAT_B=-57;
+let MW=900, MH=Math.round(MW*(LAT_T-LAT_B)/360*1.28);
+const px=(lon,W)=>(lon+180)/360*W;
+const py=(lat,H)=>(LAT_T-lat)/(LAT_T-LAT_B)*H;
+
+function unwrapRing(r){
+  if(!r.length) return r;
+  const u=[r[0]];
+  for(let i=1;i<r.length;i++){
+    let lo=r[i][0]; const p=u[i-1][0];
+    while(lo-p>180) lo-=360;
+    while(lo-p<-180) lo+=360;
+    u.push([lo,r[i][1]]);
+  }
+  return u;
+}
+function ringPath(u,W,H,offDeg){
+  let d='';
+  for(let i=0;i<u.length;i++) d+=(i?'L':'M')+px(u[i][0]+offDeg,W).toFixed(1)+' '+py(u[i][1],H).toFixed(1)+' ';
+  return d+'Z ';
+}
+
+/* --- metrics --- */
+const METRICS = [
+  ['net','Net trade position','Mt exported minus imported'],
+  ['x','Exports','Mt shipped out'],
+  ['m','Imports','Mt brought in'],
+  ['ipa','Domestic price anomaly','SDG 2.c.1 score, 76 countries'],
+];
+let mapGroup='Wheat', mapMetric='net', pinned=null;
+
+$('#map-c1').innerHTML = M.groups.map(g=>`<button class="chip" data-g="${esc(g)}" aria-pressed="${g===mapGroup}">${esc(g)}</button>`).join('')
+  + `<div class="spacer"></div><span class="sig" style="align-self:center">FAO detailed trade matrix, ${M.year}</span>`;
+$('#map-c2').innerHTML = METRICS.map(([k,l])=>`<button class="chip" data-m="${k}" aria-pressed="${k===mapMetric}">${esc(l)}</button>`).join('')
+  + `<div class="spacer"></div><button class="chip" id="map-clear" aria-pressed="false">Reset view</button>`;
+
+const SEQ=['#cde2fb','#9ec5f4','#6da7ec','#3987e5','#256abf','#184f95','#0d366b'];
+const DIV_POS=['#cde2fb','#86b6ef','#3987e5','#1c5cab','#0d366b'];
+const DIV_NEG=['#f6cccc','#e79a9a','#d03b3b','#a82c2c','#7d2020'];
+
+function metricValue(cid){
+  const t=(M.trade[cid]||{})[mapGroup];
+  if(mapMetric==='ipa'){
+    const p=(M.price[cid]||{})[mapGroup];
+    return p && p.ipa!=null ? p.ipa : null;
+  }
+  if(!t) return null;
+  if(mapMetric==='x') return t.x/1e6;
+  if(mapMetric==='m') return t.m/1e6;
+  return (t.x-t.m)/1e6;
+}
+function scaleFn(){
+  const vals=SHAPES.map(s=>metricValue(s.id)).filter(v=>v!=null&&!isNaN(v));
+  if(mapMetric==='ipa'){
+    return {kind:'status', color:v=> v==null?null : v>=1?'var(--critical)': v>=0.5?'var(--warning)':'var(--good)'};
+  }
+  if(mapMetric==='net'){
+    const mx=Math.max(0.01,...vals.map(Math.abs));
+    const band=v=>Math.min(4,Math.floor(Math.pow(Math.abs(v)/mx,.4)*5));
+    return {kind:'div', max:mx, color:v=> v==null?null : Math.abs(v)<1e-6 ? 'var(--divmid)' : (v>0?DIV_POS:DIV_NEG)[band(v)]};
+  }
+  const mx=Math.max(0.01,...vals);
+  return {kind:'seq', max:mx, color:v=> (v==null||v<=0)?null : SEQ[Math.min(6,Math.floor(Math.pow(v/mx,.4)*7))]};
+}
+
+function partnersOf(cid){
+  const t=(M.trade[cid]||{})[mapGroup]||{};
+  return {out:(t.xd||[]), inn:(t.mo||[])};
+}
+function arcPath(a,b,W,H,curve,offDeg){
+  let lo1=a[0], la1=a[1], lo2=b[0], la2=b[1];
+  if(Math.abs(lo2-lo1)>180) lo2 += lo2>lo1 ? -360 : 360;   // always take the short way round
+  const x1=px(lo1+offDeg,W), y1=py(la1,H), x2=px(lo2+offDeg,W), y2=py(la2,H);
+  const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1;
+  return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${(mx-dy*curve).toFixed(1)} ${(my+dx*curve).toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
+
+let panX=0, panY=0, zoom=1, mapW=900, mapH=460;
+const ZMIN=1, ZMAX=8;
+function clampPan(){
+  const ww=mapW*zoom;
+  while(panX>ww) panX-=ww;
+  while(panX<-ww) panX+=ww;
+  const minY=mapH-mapH*zoom;
+  panY=Math.min(0,Math.max(minY,panY));
+}
+function applyPan(){
+  const g=document.getElementById('panG');
+  if(g) g.setAttribute('transform',`translate(${panX.toFixed(1)} ${panY.toFixed(1)}) scale(${zoom.toFixed(3)})`);
+}
+function drawMap(){
+  const host=$('#worldmap'); const W=Math.max(320,host.clientWidth||900);
+  const H=Math.round(W*(LAT_T-LAT_B)/360*1.30);
+  mapW=W; mapH=H;
+  const sc=scaleFn(), OFFS=[-360,0,360];
+  let g='';
+  for(const s of SHAPES){
+    const v=metricValue(s.id), c=sc.color(v);
+    let d='';
+    for(const r of s.rings) for(const o of OFFS) d+=ringPath(r,W,H,o);
+    if(!d.trim()) continue;
+    g+=`<path d="${d}" fill="${c||'var(--mapnull)'}" stroke="var(--mapline)" stroke-width=".5"
+         data-id="${s.id}" class="cshape${pinned===s.id?' pinned':''}" vector-effect="non-scaling-stroke"/>`;
+  }
+  if(pinned && M.cent[pinned]){
+    const c0=M.cent[pinned], {out,inn}=partnersOf(pinned);
+    const mx=Math.max(1,...out.map(p=>p[1]),...inn.map(p=>p[1]));
+    const wdt=v=>1+Math.sqrt(v/mx)*4.2;
+    let halo='', line='';
+    const add=(from,to,v,col,mk)=>{
+      const c=M.cent[to==='self'?from:to]; if(!c) return;
+      const w=wdt(v);
+      for(const o of [-360,0,360]){
+        const a=arcPath(from===pinned?c0:c, from===pinned?c:c0, W, H, .19, o);
+        halo+=`<path d="${a}" fill="none" stroke="var(--surface)" stroke-width="${(w+3).toFixed(1)}" stroke-linecap="round" opacity=".92" vector-effect="non-scaling-stroke"/>`;
+        line+=`<path d="${a}" fill="none" stroke="${col}" stroke-width="${w.toFixed(1)}" stroke-linecap="round" opacity=".9" marker-end="url(#${mk})" vector-effect="non-scaling-stroke"/>`;
+      }
+    };
+    inn.forEach(([p,v])=>add(p,pinned,v,'var(--s2)','ahIn'));
+    out.forEach(([p,v])=>add(pinned,p,v,'var(--s1)','ahOut'));
+    g+=halo+line;
+    for(const o of [-360,0,360])
+      g+=`<circle cx="${px(c0[0]+o,W).toFixed(1)}" cy="${py(c0[1],H).toFixed(1)}" r="4.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2" pointer-events="none"/>`;
+  }
+  const defs=`<defs>
+    <marker id="ahOut" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0.8 L10 5 L0 9.2 z" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.1"/></marker>
+    <marker id="ahIn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0.8 L10 5 L0 9.2 z" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.1"/></marker>
+  </defs>`;
+  host.innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="height:auto" role="img" aria-label="World map of ${esc(mapGroup)} trade, drag to recentre">${defs}<rect x="0" y="0" width="${W}" height="${H}" fill="var(--mapsea)"/><g id="panG">${g}</g></svg>`;
+  applyPan();
+  drawLegend(sc);
+  wireMapEvents(host);
+}
+
+let dragState={down:false,moved:0,lastX:0,lastY:0,svg:null};
+let pinchState=null;
+
+function wireMapEvents(host){
+  const svg=host.querySelector('svg'), tip=$('#map-tip');
+  svg.style.cursor='grab';
+  svg.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch' && pinchState) return;
+    dragState={down:true,moved:0,lastX:e.clientX,lastY:e.clientY,svg};
+    svg.style.cursor='grabbing'; tip.style.opacity=0;
+  });
+  svg.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rc=svg.getBoundingClientRect(), s=mapW/rc.width;
+    const cx=(e.clientX-rc.left)*s, cy=(e.clientY-rc.top)*s;
+    const k0=zoom;
+    zoom=Math.min(ZMAX,Math.max(ZMIN, zoom*Math.pow(0.999,e.deltaY)));
+    panX=cx-(cx-panX)*(zoom/k0); panY=cy-(cy-panY)*(zoom/k0);
+    if(zoom===ZMIN) panY=0;
+    clampPan(); applyPan(); tip.style.opacity=0;
+  },{passive:false});
+  // pinch to zoom
+  const pts=new Map();
+  svg.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') pts.set(e.pointerId,[e.clientX,e.clientY]); });
+  svg.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='touch'||!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size!==2) return;
+    const [a,b]=[...pts.values()];
+    const d=Math.hypot(a[0]-b[0],a[1]-b[1]);
+    if(pinchState){
+      const rc=svg.getBoundingClientRect(), s=mapW/rc.width, k0=zoom;
+      zoom=Math.min(ZMAX,Math.max(ZMIN, pinchState.z0*d/pinchState.d0));
+      const cx=((a[0]+b[0])/2-rc.left)*s, cy=((a[1]+b[1])/2-rc.top)*s;
+      panX=cx-(cx-panX)*(zoom/k0); panY=cy-(cy-panY)*(zoom/k0);
+      clampPan(); applyPan(); dragState.down=false;
+    } else pinchState={d0:d,z0:zoom};
+  });
+  const drop=e=>{ pts.delete(e.pointerId); if(pts.size<2) pinchState=null; };
+  svg.addEventListener('pointerup',drop); svg.addEventListener('pointercancel',drop);
+
+  host.querySelectorAll('.cshape').forEach(p=>{
+    p.addEventListener('mousemove',e=>{
+      if(dragState.down) return;
+      const id=p.dataset.id, tr=(M.trade[id]||{})[mapGroup], pr=(M.price[id]||{})[mapGroup];
+      tip.innerHTML=`<div class="th">${esc(M.names[id]||'&mdash;')}</div>`+
+        (tr?`<div class="row"><span class="tipname">Exports</span><b>${(tr.x/1e6).toFixed(2)} Mt</b></div>
+             <div class="row"><span class="tipname">Imports</span><b>${(tr.m/1e6).toFixed(2)} Mt</b></div>`
+           :`<div class="row"><span class="tipname">No ${esc(mapGroup.toLowerCase())} trade reported</span></div>`)+
+        (pr&&pr.ipa!=null?`<div class="row"><span class="tipname">Price anomaly</span><b>${pr.ipa.toFixed(2)}</b></div>`:'')+
+        `<div class="row" style="margin-top:5px;color:var(--muted);font-size:11.5px">Click to pin &middot; drag to pan &middot; scroll to zoom</div>`;
+      tip.style.opacity=1;
+      const hb=host.getBoundingClientRect();
+      let L=e.clientX-hb.left+14; if(L+tip.offsetWidth>hb.width) L=e.clientX-hb.left-tip.offsetWidth-14;
+      tip.style.left=Math.max(4,L)+'px';
+      tip.style.top=Math.max(4,Math.min(hb.height-tip.offsetHeight-4,e.clientY-hb.top+14))+'px';
+    });
+    p.addEventListener('mouseleave',()=>tip.style.opacity=0);
+    p.addEventListener('click',()=>{
+      if(dragState.moved>5) return;            // it was a drag, not a pick
+      pinned = pinned===p.dataset.id?null:p.dataset.id;
+      drawMap(); drawSide();
+    });
+  });
+}
+
+/* global drag: listening on window rather than capturing the pointer, so that
+   the click that lands on a country path still reaches it */
+addEventListener('pointermove',e=>{
+  if(!dragState.down||!dragState.svg) return;
+  const rc=dragState.svg.getBoundingClientRect(), s=mapW/rc.width;
+  const dx=(e.clientX-dragState.lastX)*s, dy=(e.clientY-dragState.lastY)*s;
+  dragState.lastX=e.clientX; dragState.lastY=e.clientY;
+  dragState.moved+=Math.abs(dx)+Math.abs(dy);
+  panX+=dx; if(zoom>1) panY+=dy;
+  clampPan(); applyPan();
+});
+addEventListener('pointerup',()=>{
+  if(!dragState.down) return;
+  if(dragState.svg) dragState.svg.style.cursor='grab';
+  dragState.down=false;
+  setTimeout(()=>{dragState.moved=0;},0);      // let the click handler read it first
+});
+
+function drawLegend(sc){
+  const el=$('#map-legend');
+  const sw=c=>`<i class="lgs" style="background:${c}"></i>`;
+  if(sc.kind==='status'){
+    el.className='maplegend';
+    el.innerHTML=`<span class="lgl">SDG 2.c.1</span>`+
+      [['var(--good)','Normal'],['var(--warning)','Moderately high'],['var(--critical)','Abnormally high'],['var(--mapnull)','Not screened']]
+      .map(([c,l])=>`<span class="lgi"><i style="background:${c}"></i>${l}</span>`).join('');
+    return;
+  }
+  if(sc.kind==='div'){
+    el.className='maplegend stacked';
+    const cap=sc.max.toFixed(1);
+    el.innerHTML=
+      `<div class="lgrow"><span class="lgk">Buys &mdash; net importer</span>${DIV_NEG.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`+
+      `<div class="lgrow"><span class="lgk">Sells &mdash; net exporter</span>${DIV_POS.map(sw).join('')}<span class="lgl">0 to ${cap} Mt</span></div>`;
+    return;
+  }
+  el.className='maplegend';
+  el.innerHTML=`<span class="lgl">0</span>`+SEQ.map(sw).join('')+`<span class="lgl">${sc.max.toFixed(1)} Mt</span>`;
+}
+
+function drawSide(){
+  const el=$('#map-side');
+  if(!pinned){
+    const rows=SHAPES.map(s=>[s.id,metricValue(s.id)]).filter(r=>r[1]!=null&&r[1]>0)
+      .sort((a,b)=>b[1]-a[1]).slice(0,12);
+    const lbl=(METRICS.find(m=>m[0]===mapMetric)||METRICS[0])[1];
+    el.innerHTML=`<h3 class="sidet">${esc(mapGroup)} &middot; ${esc(lbl)}</h3>
+      <p class="sidep">Pick a country on the map to pin its trade flows. Top 12 by this measure:</p>
+      <ol class="rank">${rows.map(([id,v])=>`<li><span>${esc(M.names[id]||id)}</span><b>${mapMetric==='ipa'?v.toFixed(2):v.toFixed(2)+' Mt'}</b></li>`).join('')}</ol>`;
+    return;
+  }
+  const t=(M.trade[pinned]||{})[mapGroup], pr=(M.price[pinned]||{})[mapGroup];
+  const {out,inn}=partnersOf(pinned);
+  const nm=id=>esc(M.names[id]||id);
+  const net = t ? (t.x-t.m)/1e6 : null;
+  el.innerHTML=`<h3 class="sidet">${nm(pinned)}</h3>
+    <p class="sidep">${esc(M.reg[pinned]||'')} &middot; ${esc(mapGroup)}, ${M.year}</p>
+    ${t?`<div class="kv"><div><span>Exports</span><b>${(t.x/1e6).toFixed(2)} Mt</b></div>
+         <div><span>Imports</span><b>${(t.m/1e6).toFixed(2)} Mt</b></div>
+         <div><span>Net</span><b class="${net>0?'neg':'pos'}">${net>0?'+':''}${net.toFixed(2)} Mt</b></div></div>`
+      :`<p class="sidep">No ${esc(mapGroup.toLowerCase())} trade reported for ${M.year}.</p>`}
+    ${pr?`<div class="prbox"><div class="prtop"><span>Domestic price, ${esc(pr.n||mapGroup)}</span>${pill(pr.flag)}</div>
+        <div class="kv"><div><span>Latest</span><b>${nf(pr.last, pr.last<10?2:0)} ${esc(pr.cur||'')}/${esc(pr.u||'')}</b></div>
+        <div><span>12m real</span><b>${pr.yoyR==null?'&mdash;':(pr.yoyR>0?'+':'')+pr.yoyR.toFixed(1)+'%'}</b></div>
+        <div><span>IPA</span><b>${pr.ipa==null?'&mdash;':pr.ipa.toFixed(2)}</b></div></div></div>`:''}
+    ${out.length?`<div class="flowh"><i style="background:var(--s1)"></i>Ships to</div>
+      <ul class="flist">${out.map(([p,v])=>`<li><span>${nm(p)}</span><b>${(v/1e6).toFixed(2)} Mt</b></li>`).join('')}</ul>`:''}
+    ${inn.length?`<div class="flowh"><i style="background:var(--s2)"></i>Buys from</div>
+      <ul class="flist">${inn.map(([p,v])=>`<li><span>${nm(p)}</span><b>${(v/1e6).toFixed(2)} Mt</b></li>`).join('')}</ul>`:''}`;
+}
+
+$('#map-note').innerHTML = `FAOSTAT detailed trade matrix, ${M.year}, export quantities in tonnes. `+
+  `Where a country filed no export return for the year, its flows are reconstructed from partner-reported imports `+
+  `(<b>${M.mirrorBackfilled.toLocaleString('en-GB')}</b> mirrored edges). This matters: the Russian Federation has filed no trade return since 2021, `+
+  `so without mirroring the world's largest wheat exporter would show as zero. Arrows show the eight largest partners in each direction, not the full network.`;
+
+$('#map-c1').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return;
+  mapGroup=b.dataset.g; $('#map-c1').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
+  drawMap(); drawSide();});
+$('#map-c2').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b)return;
+  if(b.id==='map-clear'){ pinned=null; panX=0; panY=0; zoom=1; drawMap(); drawSide(); return; }
+  mapMetric=b.dataset.m;
+  $('#map-c2').querySelectorAll('.chip[data-m]').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));
+  drawMap(); drawSide();});
+
+/* ============ boot ============ */
+function renderAll(){drawCmp(); drawDomChart(); drawReg(); drawMap(); drawSide();}
+drawDomTable(); renderAll();
+let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(renderAll,180);});
+</script>

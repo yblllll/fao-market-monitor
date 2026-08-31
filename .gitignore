@@ -1,0 +1,5 @@
+tm.zip
+*.pyc
+__pycache__/
+.DS_Store
+fetch_all.log
